@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <DesignationSubCategoryDef>
+    	<defName>SubCategory_Chairs</defName>
+    	<label>chairs</label>
+    	<description>Assorted chairs!</description>
+    	<!-- graphicData is optional, if not set the icon for the first def listed below will be borrowed. -->
+    	<!-- <graphicData></graphicData> -->
+    	<defNames>
+    		<li>Stool</li>
+    		<li>DiningChair</li>
+    		<li>Armchair</li>
+    	</defNames>
+    	<designationCategory>Furniture</designationCategory>
+    	<!-- Debug flag prints some extra information after map is loaded (while subcategories are being created) -->
+    	<debug>true</debug>
+    </DesignationSubCategoryDef>
+
+    <DesignationSubCategoryDef>
+    	<defName>SubCategory_Beds</defName>
+    	<label>beds</label>
+    	<description>Assorted beds!</description>
+    	<defNames>
+    		<li>Bed</li>
+    		<li>SleepingSpot</li>
+    		<li>RoyalBed</li>
+    		<li>HospitalBed</li>
+    	</defNames>
+    	<designationCategory>Furniture</designationCategory>
+    	<debug>true</debug>
+    </DesignationSubCategoryDef>
+</Defs>
