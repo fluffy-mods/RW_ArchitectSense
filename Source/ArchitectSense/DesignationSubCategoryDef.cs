@@ -6,12 +6,16 @@ using Verse;
 
 namespace ArchitectSense
 {
-    class DesignationSubCategoryDef : Def
+    internal class DesignationSubCategoryDef : Def
     {
+        #region Fields
+
+        public bool             debug                   = false;
         public List<string>     defNames                = new List<string>();
-        public int              order                   = 0;
         public string           designationCategory     = string.Empty;
-        public GraphicData      graphicData;
-        public bool             debug;
+        public GraphicData      graphicData             = null;
+        public int              order                   = 0;
+
+        #endregion Fields
     }
 }

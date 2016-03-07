@@ -1,23 +1,71 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
 using Verse;
-using RimWorld;
 
 namespace ArchitectSense
 {
-    class Designator_SubCategory : Designator
+    internal class Designator_SubCategory : Designator
     {
-        public List<Designator_Build> SubDesignators = new List<Designator_Build>();
-        public static Texture2D SubCategoryIndicatorTexture = ContentFinder<Texture2D>.Get( "UI/Icons/SubcategoryIndicator" );
+        #region Fields
+
         public static Vector2 SubCategoryIndicatorSize = new Vector2( 16f, 16f );
-        
+        public static Texture2D SubCategoryIndicatorTexture = ContentFinder<Texture2D>.Get( "UI/Icons/SubcategoryIndicator" );
+        public List<Designator_SubCategoryItem> SubDesignators = new List<Designator_SubCategoryItem>();
+
+        private PropertyInfo _iconDrawColorPropertyInfo = typeof (Designator_Build).GetProperty( "IconDrawColor",
+                                                                                                 BindingFlags.NonPublic |
+                                                                                                 BindingFlags.Instance );
+
+        #endregion Fields
+
+        #region Properties
+
+        public List<Designator_SubCategoryItem> ValidSubDesignators
+        {
+            get
+            {
+                return SubDesignators.Where( designator => designator.Visible ).ToList();
+            }
+        }
+
+        public override bool Visible
+        {
+            get
+            {
+                return ValidSubDesignators.Count > 0;
+            }
+        }
+
+        protected override Color IconDrawColor
+        {
+            get
+            {
+                return (Color)_iconDrawColorPropertyInfo.GetValue( SubDesignators.First(), null );
+            }
+        }
+
+        #endregion Properties
+
+        #region Methods
+
         public override AcceptanceReport CanDesignateCell( IntVec3 loc )
         {
             return false;
+        }
+
+        public override GizmoResult GizmoOnGUI( Vector2 topLeft )
+        {
+            GizmoResult val = base.GizmoOnGUI( topLeft );
+            if ( ValidSubDesignators.Count == 1 )
+                return val;
+            Rect subCategoryIndicatorRect = new Rect( topLeft.x + this.Width - 20f, topLeft.y + 4f, SubCategoryIndicatorSize.x, SubCategoryIndicatorSize.y );
+            GUI.DrawTexture( subCategoryIndicatorRect, SubCategoryIndicatorTexture );
+            return val;
         }
 
         public override bool GroupsWith( Gizmo other )
@@ -25,41 +73,26 @@ namespace ArchitectSense
             return false;
         }
 
-        public bool useDefaultIcon;
-
-        private PropertyInfo _iconDrawColorPropertyInfo = typeof (Designator_Build).GetProperty( "IconDrawColor",
-                                                                                                 BindingFlags.NonPublic |
-                                                                                                 BindingFlags.Instance );
-
-        protected override Color IconDrawColor
-        {
-            get
-            {
-                if ( useDefaultIcon )
-                    return Color.white;
-                return (Color)_iconDrawColorPropertyInfo.GetValue( SubDesignators.First(), null );
-            }
-        }
-
-        public override GizmoResult GizmoOnGUI( Vector2 topLeft )
-        {
-            GizmoResult val = base.GizmoOnGUI( topLeft );
-            Rect subCategoryIndicatorRect = new Rect( topLeft.x + this.Width - 20f, topLeft.y + 4f, SubCategoryIndicatorSize.x, SubCategoryIndicatorSize.y );
-            GUI.DrawTexture( subCategoryIndicatorRect, SubCategoryIndicatorTexture );
-            return val;
-        }
-
         public override void ProcessInput( Event ev )
         {
+            // if only one option, immediately skip to that option's processinput
+            if ( ValidSubDesignators.Count() == 1 )
+            {
+                ValidSubDesignators.First().ProcessInput( ev );
+                return;
+            }
+
             List<FloatMenuOption_SubCategory> options = new List<FloatMenuOption_SubCategory>();
-            foreach ( Designator_Build designator in SubDesignators.Where( designator => designator.Visible ) )
+            foreach ( Designator_Build designator in ValidSubDesignators )
             {
                 options.Add( new FloatMenuOption_SubCategory( designator.LabelCap, delegate
                 {
                     designator.ProcessInput( ev );
                 }, designator ) );
             }
-            Find.WindowStack.Add( new FloatMenu_SubCategory( options, null, new Vector2( 75, 75) ) );
+            Find.WindowStack.Add( new FloatMenu_SubCategory( options, null, new Vector2( 75, 75 ) ) );
         }
+
+        #endregion Methods
     }
 }
