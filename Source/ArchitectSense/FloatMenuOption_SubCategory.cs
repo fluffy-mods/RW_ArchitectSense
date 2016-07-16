@@ -30,7 +30,7 @@ namespace ArchitectSense
             this.gizmo = gizmo;
         }
 
-        public override bool OptionOnGUI( Rect rect, Color baseColor )
+        public override bool DoGUI( Rect rect, bool pawnOrder )
         {
             // considering we're trying to recreate the gizmo look and feel, we might as well steal the Gizmo.OnGUI
             GizmoResult x = gizmo.GizmoOnGUI( rect.position );
@@ -38,7 +38,7 @@ namespace ArchitectSense
                 gizmo.ProcessInput( x.InteractEvent );
             
             // return clicks.
-            return Widgets.InvisibleButton( rect );
+            return Widgets.ButtonInvisible( rect );
         }
     }
 }

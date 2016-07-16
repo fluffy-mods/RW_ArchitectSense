@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Chairs</defName>
     	<label>seats</label>
     	<description>Chairs, stools sofas and benches</description>
@@ -19,9 +19,9 @@
     	<designationCategory>Furniture</designationCategory>
     	<!-- Debug flag prints some extra information after map is loaded (while subcategories are being created) -->
     	<debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Beds</defName>
     	<label>beds</label>
     	<description>Assorted beds!</description>
@@ -37,9 +37,9 @@
     	</defNames>
     	<designationCategory>Furniture</designationCategory>
     	<debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
         <defName>SubCategory_AnimalFurniture</defName>
         <label>animal</label>
         <description>Beds and sleeping places for animals.</description>
@@ -52,9 +52,9 @@
         </defNames>
         <designationCategory>Furniture</designationCategory>
         <debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
         <defName>SubCategory_Tables</defName>
         <label>tables</label>
         <description>Dining tables, side tables and coffee tables.</description>
@@ -67,9 +67,9 @@
         </defNames>
         <designationCategory>Furniture</designationCategory>
         <debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
         <defName>SubCategory_Beauty</defName>
         <label>decoration</label>
         <description>Decorative bits and pieces.</description>
@@ -111,9 +111,9 @@
         </defNames>
         <designationCategory>Furniture</designationCategory>
         <debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
-    <DesignationSubCategoryDef>
+    <ArchitectSense.DesignationSubCategoryDef>
         <defName>SubCategory_Doormats</defName>
         <label>doormats</label>
         <description>Keeping your base clean.</description>
@@ -127,7 +127,7 @@
         </defNames>
         <designationCategory>Furniture</designationCategory>
         <debug>true</debug>
-    </DesignationSubCategoryDef>
+    </ArchitectSense.DesignationSubCategoryDef>
 
 
 </Defs>

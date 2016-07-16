@@ -9,6 +9,7 @@ using Verse;
 
 namespace ArchitectSense
 {
+    [StaticConstructorOnStartup] // not actually needed - but suppresses warning.
     internal class Designator_SubCategory : Designator
     {
         #region Fields

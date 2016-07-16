@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-    <ModHelperDef>
+    <CommunityCoreLibrary.ModHelperDef>
         <defName>ArchitectSense</defName> 
         <ModName>ArchitectSense</ModName> 
-        <version>0.12.5</version>
+        <minCCLVersion>0.14.0</minCCLVersion>
         <PostLoadInjectors>            
             <li>ArchitectSense.Bootstrap</li>
         </PostLoadInjectors>
-    </ModHelperDef>
+    </CommunityCoreLibrary.ModHelperDef>
 </Defs>

@@ -19,14 +19,14 @@ namespace ArchitectSense
 
         #region Methods
 
-        public override void Inject()
+        public override bool Inject()
         {
             Log.Message( "ArchitectSense :: Creating subcategories" );
 
             if ( Designator_SubCategoryItem.entDefFieldInfo == null )
             {
                 Log.Error( "ArchitectSense :: Fetching entDef field info failed! Stopping!" );
-                return;
+                return false;
             }
 
             foreach ( DesignationSubCategoryDef def in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading )
@@ -75,7 +75,7 @@ namespace ArchitectSense
                     }
 
                     // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
-                    Designator_Build bdefDesignator = mainCategoryDef.resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as Designator_Build;
+                    Designator_Build bdefDesignator = mainCategoryDef._resolvedDesignators().FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as Designator_Build;
                     if ( def.debug && bdefDesignator == null )
                         Log.Warning( "No designator found with matching entity def! Skipping." );
 
@@ -84,10 +84,10 @@ namespace ArchitectSense
                     {
                         // first, set the insert position of the subcategory to the first designator found
                         if ( subCategoryIndex < 0 )
-                            subCategoryIndex = mainCategoryDef.resolvedDesignators.IndexOf( bdefDesignator );
+                            subCategoryIndex = mainCategoryDef._resolvedDesignators().IndexOf( bdefDesignator );
 
                         designators.Add( new Designator_SubCategoryItem( bdefDesignator ) );
-                        mainCategoryDef.resolvedDesignators.Remove( bdefDesignator );
+                        mainCategoryDef._resolvedDesignators().Remove( bdefDesignator );
 
                         if ( def.debug )
                             Log.Message( "ArchitectSense :: ThingDef " + defName + " passed checks and was added to subcategory." );
@@ -145,7 +145,7 @@ namespace ArchitectSense
                     }
 
                     // insert at location where first designator used to be.
-                    mainCategoryDef.resolvedDesignators.Insert( subCategoryIndex, subCategory );
+                    mainCategoryDef._resolvedDesignators().Insert( subCategoryIndex, subCategory );
 
                     if ( def.debug )
                         Log.Message( "ArchitectSense :: Subcategory " + subCategory.LabelCap + " created." );
@@ -155,6 +155,7 @@ namespace ArchitectSense
                     Log.Warning( "ArchitectSense :: Subcategory " + def.LabelCap + " did not have any (resolved) contents! Skipping." );
                 }
             }
+            return true;
         }
 
         private bool isForDef( Designator_Build des, BuildableDef def )

@@ -37,7 +37,7 @@ namespace ArchitectSense
             if( tex == null )
                 tex = BaseContent.BadTex;
             GUI.DrawTexture( buttonRect, BGTex );
-            MouseoverSounds.DoRegion( buttonRect, SoundDefOf.MouseoverButtonCommand );
+            MouseoverSounds.DoRegion( buttonRect, SoundDefOf.MouseoverCommand );
             GUI.color = IconDrawColor * transparency;
             Widgets.DrawTextureFitted( new Rect( buttonRect ), tex, iconDrawScale * 0.85f, iconProportions, iconTexCoords );
             GUI.color = Color.white * transparency;
@@ -53,7 +53,7 @@ namespace ArchitectSense
                     Event.current.Use();
                 }
             }
-            if( Widgets.InvisibleButton( buttonRect ) )
+            if( Widgets.ButtonInvisible( buttonRect ) )
                 clicked = true;
             string labelCap = LabelCap;
             if( !labelCap.NullOrEmpty() )

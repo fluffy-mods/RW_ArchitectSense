@@ -44,19 +44,19 @@ namespace ArchitectSense
                 ++numColumns;
             }
             while( TotalHeight > Screen.height * .9 );
-            currentWindowRect.size = InitialWindowSize;
+            windowRect.size = InitialSize;
 
             // first off, move float so it goes up from the mouse click instead of down
-            currentWindowRect.y -= currentWindowRect.height;
+            windowRect.y -= windowRect.height;
 
             // tweak rect position to fit within window
             // note: we're assuming up, then right placement of buttons now. 
-            if( currentWindowRect.xMax > (double)Screen.width )
-                currentWindowRect.x = Screen.width - currentWindowRect.width;
-            if ( currentWindowRect.yMin < 0f )
-                currentWindowRect.y -= currentWindowRect.yMin;
-            if( currentWindowRect.yMax > (double)Screen.height )
-                currentWindowRect.y = Screen.height - currentWindowRect.height;
+            if( windowRect.xMax > (double)Screen.width )
+                windowRect.x = Screen.width - windowRect.width;
+            if ( windowRect.yMin < 0f )
+                windowRect.y -= windowRect.yMin;
+            if( windowRect.yMax > (double)Screen.height )
+                windowRect.y = Screen.height - windowRect.height;
         }
 
         public override void DoWindowContents( Rect canvas )
@@ -86,7 +86,7 @@ namespace ArchitectSense
 
                 // re-set transparent base color for each item.
                 GUI.color = baseColor;
-                if( option.OptionOnGUI( optionRect, baseColor ) )
+                if( option.DoGUI( optionRect, false ) )
                 {
                     // click actions are handled in OptionOnGUI.
                     if( _closeOnSelection)
@@ -122,7 +122,7 @@ namespace ArchitectSense
             }
         }
 
-        public override Vector2 InitialWindowSize
+        public override Vector2 InitialSize
         {
             get
             {
@@ -131,16 +131,7 @@ namespace ArchitectSense
                 return new Vector2( TotalWidth, TotalHeight );
             }
         }
-
-
-        protected override WindowInitialPosition InitialPosition
-        {
-            get
-            {
-                return WindowInitialPosition.OnMouse;
-            }
-        }
-
+        
         private float ColumnMaxOptionCount
         {
             get
