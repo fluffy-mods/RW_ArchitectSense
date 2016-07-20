@@ -17,7 +17,7 @@ namespace ArchitectSense
         public Designator_SubCategoryItem( ThingDef entDef ) : base( entDef ) {}
 
         // constructor from Designator_Build, links to constructor from ThingDef.
-        public Designator_SubCategoryItem( Designator_Build designator ) : base( entDefFieldInfo.GetValue( designator ) as ThingDef ) {}
+        public Designator_SubCategoryItem( Designator_Build designator ) : base( entDefFieldInfo.GetValue( designator ) as BuildableDef ) {}
 
         public override GizmoResult GizmoOnGUI( Vector2 topLeft )
         {

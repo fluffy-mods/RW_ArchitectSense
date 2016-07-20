@@ -35,6 +35,22 @@
     	<debug>true</debug>
     </ArchitectSense.DesignationSubCategoryDef>
 
+    <!-- Floors -->
+    <ArchitectSense.DesignationSubCategoryDef>
+        <defName>SubCategory_VanillaFloorTest</defName>
+        <label>StoneFloors</label>
+        <description>Store your stuff.</description>
+        <defNames>
+            <li>TileSandstone</li>
+            <li>TileGranite</li>
+            <li>TileLimestone</li>
+            <li>TileSlate</li>
+            <li>TileMarble</li>
+        </defNames>
+        <designationCategory>Floors</designationCategory>
+        <debug>true</debug>
+    </ArchitectSense.DesignationSubCategoryDef>
+
     <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Beds</defName>
     	<label>beds</label>
