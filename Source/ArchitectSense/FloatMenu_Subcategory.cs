@@ -33,6 +33,7 @@ namespace ArchitectSense
             _options          = options;
             _optionSize       = optionSize;
             _closeOnSelection = closeOnSelection;
+            preventCameraMotion = false;
 
             // need to redo column and size calculations because base isn't aware of our configurable sizes.
             // copypasta from base..ctor

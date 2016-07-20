@@ -45,7 +45,9 @@ namespace ArchitectSense
 
                 // set up sub category
                 List<Designator_SubCategoryItem> designators = new List<Designator_SubCategoryItem>();
-                int subCategoryIndex = -1;
+
+                // keep track of best position for the subcategory - it will replace the first subitem in the original category.
+                int FirstDesignatorIndex = -1;
 
                 // start adding designators to it
                 foreach ( string defName in def.defNames )
@@ -82,9 +84,10 @@ namespace ArchitectSense
                     // if not null, add designator to the subcategory, and remove from main category
                     if ( bdefDesignator != null )
                     {
-                        // first, set the insert position of the subcategory to the first designator found
-                        if ( subCategoryIndex < 0 )
-                            subCategoryIndex = mainCategoryDef._resolvedDesignators().IndexOf( bdefDesignator );
+                        // find index, and update FirstDesignatorIndex
+                        int index = mainCategoryDef._resolvedDesignators().IndexOf( bdefDesignator );
+                        if ( FirstDesignatorIndex < 0 || index < FirstDesignatorIndex )
+                            FirstDesignatorIndex = index;
 
                         designators.Add( new Designator_SubCategoryItem( bdefDesignator ) );
                         mainCategoryDef._resolvedDesignators().Remove( bdefDesignator );
@@ -144,8 +147,8 @@ namespace ArchitectSense
                         }
                     }
 
-                    // insert at location where first designator used to be.
-                    mainCategoryDef._resolvedDesignators().Insert( subCategoryIndex, subCategory );
+                    // insert to replace first designator removed
+                    mainCategoryDef._resolvedDesignators().Insert( FirstDesignatorIndex, subCategory );
 
                     if ( def.debug )
                         Log.Message( "ArchitectSense :: Subcategory " + subCategory.LabelCap + " created." );

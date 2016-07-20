@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
+
+    <ArchitectSense.DesignationSubCategoryDef>
+        <debug>true</debug>
+        <defName>SubCategory_PowerNatural</defName>
+        <label>StoneFloors</label>
+        <description>Store your stuff.</description>
+        <defNames>
+            <li>WindTurbine</li>
+            <li>SolarGenerator</li>
+            <li>GeothermalGenerator</li>
+        </defNames>
+        <designationCategory>Power</designationCategory>
+    </ArchitectSense.DesignationSubCategoryDef>
+
     <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Chairs</defName>
     	<label>seats</label>
