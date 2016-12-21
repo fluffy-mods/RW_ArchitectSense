@@ -5,7 +5,6 @@
 // Created 2016-02-15 23:59
 
 using System;
-using CommunityCoreLibrary;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -22,7 +21,7 @@ namespace ArchitectSense
         public FloatMenuOption_SubCategory( string label,
                                             Action action,
                                             Designator_Build gizmo,
-                                            MenuOptionPriority priority = MenuOptionPriority.Medium,
+                                            MenuOptionPriority priority = MenuOptionPriority.Default,
                                             Action mouseoverGuiAction = null,
                                             Thing revalidateClickTarget = null )
             : base( label, action, priority, mouseoverGuiAction, revalidateClickTarget )

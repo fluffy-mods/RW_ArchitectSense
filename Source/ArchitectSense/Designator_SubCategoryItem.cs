@@ -77,8 +77,9 @@ namespace ArchitectSense
                 }
                 TooltipHandler.TipRegion( buttonRect, tip );
             }
-            if( !tutorHighlightTag.NullOrEmpty() )
-                TutorUIHighlighter.HighlightOpportunity( tutorHighlightTag, buttonRect );
+            // TODO: Reimplement tutor.
+            //if( !tutorHighlightTag.NullOrEmpty() )
+            //    TutorUIHighlighter.HighlightOpportunity( tutorHighlightTag, buttonRect );
 
 
             if( clicked )

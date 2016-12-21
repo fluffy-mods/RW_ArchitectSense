@@ -79,7 +79,7 @@ namespace ArchitectSense
                 return;
 
             Text.Font = GameFont.Tiny;
-            foreach( FloatMenuOption_SubCategory option in _options.OrderByDescending( op => op.priority ) )
+            foreach( FloatMenuOption_SubCategory option in _options.OrderByDescending( op => op.Priority ) )
             {
                 Rect optionRect = new Rect(listRoot.x + col * (_optionSize.x + _margin),
                                            listRoot.y + row * (_optionSize.y + _margin),

@@ -12,7 +12,7 @@ namespace ArchitectSense
 
         public bool             debug                   = false;
         public List<string>     defNames                = new List<string>();
-        public string           designationCategory     = string.Empty;
+        public DesignationCategoryDef  designationCategory;
         public GraphicData      graphicData             = null;
         public int              order                   = 0;
 

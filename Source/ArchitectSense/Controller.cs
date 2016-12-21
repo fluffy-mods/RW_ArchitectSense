@@ -1,14 +1,15 @@
-﻿using CommunityCoreLibrary;
+﻿using System;
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HugsLib;
 using UnityEngine;
 using Verse;
 
 namespace ArchitectSense
 {
-    public class Bootstrap : SpecialInjector
+    public class Controller : ModBase
     {
         #region Fields
 
@@ -19,27 +20,25 @@ namespace ArchitectSense
 
         #region Methods
 
-        public override bool Inject()
+        public override void Initialize()
         {
-            Log.Message( "ArchitectSense :: Creating subcategories" );
+            Logger.Message( "Creating subcategories" );
 
             if ( Designator_SubCategoryItem.entDefFieldInfo == null )
             {
-                Log.Error( "ArchitectSense :: Fetching entDef field info failed! Stopping!" );
-                return false;
+                Logger.Error( "Fetching entDef field info failed! Stopping!" );
+                return;
             }
 
-            foreach ( DesignationSubCategoryDef def in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading )
+            foreach ( DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading )
             {
-                if ( def.debug )
-                    Log.Message( "ArchitectSense :: Creating subcategory " + def.LabelCap + " in category " + def.designationCategory );
+                if ( category.debug )
+                    Logger.Message( "Creating subcategory {0} in category {1}", category.LabelCap, category.designationCategory );
 
                 // cop out if main cat not found
-                DesignationCategoryDef mainCategoryDef =
-                    DefDatabase<DesignationCategoryDef>.GetNamedSilentFail( def.designationCategory );
-                if ( mainCategoryDef == null )
+                if ( category.designationCategory == null )
                 {
-                    Log.Warning( "ArchitectSense :: Category " + def.designationCategory + " not found! Skipping." );
+                    Logger.Warning( "Category {0} not found! Skipping.", category.designationCategory );
                     continue;
                 }
 
@@ -49,8 +48,11 @@ namespace ArchitectSense
                 // keep track of best position for the subcategory - it will replace the first subitem in the original category.
                 int FirstDesignatorIndex = -1;
 
+                // get list of current designators in the category
+                List<Designator> resolvedDesignators = GetresolvedDesignators( category.designationCategory );
+
                 // start adding designators to it
-                foreach ( string defName in def.defNames )
+                foreach ( string defName in category.defNames )
                 {
                     BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail( defName );
 
@@ -63,37 +65,37 @@ namespace ArchitectSense
                     // buildable def exists
                     if ( bdef == null )
                     {
-                        if ( def.debug )
-                            Log.Warning( "ArchitectSense :: ThingDef " + defName + " not found! Skipping." );
+                        if ( category.debug )
+                            Logger.Warning( "ThingDef {0} not found! Skipping.", defName );
                         continue;
                     }
 
                     // main designation categories match
-                    if ( bdef.designationCategory != def.designationCategory )
+                    if ( bdef.designationCategory != category.designationCategory )
                     {
-                        if ( def.debug )
-                            Log.Warning( "ArchitectSense :: ThingDef " + defName + " main designationCategory doesn't match subcategory's designationCategory! Skipping." );
+                        if ( category.debug )
+                            Logger.Warning( "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.", defName );
                         continue;
                     }
 
                     // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
-                    Designator_Build bdefDesignator = mainCategoryDef._resolvedDesignators().FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as Designator_Build;
-                    if ( def.debug && bdefDesignator == null )
+                    Designator_Build bdefDesignator = resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as Designator_Build;
+                    if ( category.debug && bdefDesignator == null )
                         Log.Warning( "No designator found with matching entity def! Skipping." );
 
                     // if not null, add designator to the subcategory, and remove from main category
                     if ( bdefDesignator != null )
                     {
                         // find index, and update FirstDesignatorIndex
-                        int index = mainCategoryDef._resolvedDesignators().IndexOf( bdefDesignator );
+                        int index = resolvedDesignators.IndexOf( bdefDesignator );
                         if ( FirstDesignatorIndex < 0 || index < FirstDesignatorIndex )
                             FirstDesignatorIndex = index;
 
                         designators.Add( new Designator_SubCategoryItem( bdefDesignator ) );
-                        mainCategoryDef._resolvedDesignators().Remove( bdefDesignator );
+                        resolvedDesignators.Remove( bdefDesignator );
 
-                        if ( def.debug )
-                            Log.Message( "ArchitectSense :: ThingDef " + defName + " passed checks and was added to subcategory." );
+                        if ( category.debug )
+                            Logger.Message( "ThingDef {0} passed checks and was added to subcategory.", defName );
                     }
                     // done with this designator
                 }
@@ -104,15 +106,15 @@ namespace ArchitectSense
                     // create subcategory
                     Designator_SubCategory subCategory = new Designator_SubCategory();
                     subCategory.SubDesignators = designators;
-                    subCategory.defaultLabel = def.label;
-                    subCategory.defaultDesc = def.description;
+                    subCategory.defaultLabel = category.label;
+                    subCategory.defaultDesc = category.description;
 
                     // set the icon
-                    if ( def.graphicData != null )
+                    if ( category.graphicData != null )
                     {
                         // use graphic in subcategory def
-                        subCategory.icon = def.graphicData.Graphic.MatSingle.mainTexture as Texture2D;
-                        subCategory.iconProportions = def.graphicData.drawSize;
+                        subCategory.icon = category.graphicData.Graphic.MatSingle.mainTexture as Texture2D;
+                        subCategory.iconProportions = category.graphicData.drawSize;
                         subCategory.iconProportions = new Vector2( 1f, 1f );
                     }
                     else
@@ -120,9 +122,9 @@ namespace ArchitectSense
                         // use graphic in first designator
                         BuildableDef entDef = Designator_SubCategoryItem.entDefFieldInfo.GetValue( subCategory.SubDesignators.First() ) as BuildableDef;
 
-                        if ( entDef == null && def.debug )
+                        if ( entDef == null && category.debug )
                         {
-                            Log.Warning( "ArchitectSense :: Failed to get def for icon automatically." );
+                            Logger.Warning( "Failed to get def for icon automatically." );
                         }
                         else
                         {
@@ -148,17 +150,17 @@ namespace ArchitectSense
                     }
 
                     // insert to replace first designator removed
-                    mainCategoryDef._resolvedDesignators().Insert( FirstDesignatorIndex, subCategory );
+                    // Log.Message( string.Join( ", ", resolvedDesignators.Select( d => d.LabelCap ).ToArray() ) );
+                    resolvedDesignators.Insert( FirstDesignatorIndex, subCategory );
 
-                    if ( def.debug )
-                        Log.Message( "ArchitectSense :: Subcategory " + subCategory.LabelCap + " created." );
+                    if ( category.debug )
+                        Logger.Message( "Subcategory {0} created.", subCategory.LabelCap );
                 }
-                else if ( def.debug )
+                else if ( category.debug )
                 {
-                    Log.Warning( "ArchitectSense :: Subcategory " + def.LabelCap + " did not have any (resolved) contents! Skipping." );
+                    Logger.Warning( "Subcategory {0} did not have any (resolved) contents! Skipping.", category.LabelCap );
                 }
             }
-            return true;
         }
 
         private bool isForDef( Designator_Build des, BuildableDef def )
@@ -170,6 +172,20 @@ namespace ArchitectSense
             return ( Designator_SubCategoryItem.entDefFieldInfo.GetValue( des ) as BuildableDef )?.defName == def.defName;
         }
 
+        private static FieldInfo _resolvedDesignatorsFieldInfo =
+            typeof( DesignationCategoryDef ).GetField( "resolvedDesignators",
+                                                       BindingFlags.NonPublic | BindingFlags.Instance );
+
+        public List<Designator> GetresolvedDesignators( DesignationCategoryDef category )
+        {
+            if (_resolvedDesignatorsFieldInfo == null )
+                throw new Exception( "resolvedDesignatorsFieldInfo not found!" );
+                
+            return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
+        }
+
         #endregion Methods
+
+        public override string ModIdentifier => "ArchtectSense";
     }
 }
