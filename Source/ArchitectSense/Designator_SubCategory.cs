@@ -114,7 +114,15 @@ namespace ArchitectSense
 
         public List<Designator_SubCategoryItem> ValidSubDesignators
         {
-            get { return SubDesignators.Where( designator => designator.Visible ).ToList(); }
+            // currently we're initializing in the defsLoaded HugsLib callback, 
+            // but this is not ideal as calls to designator.Visible require the 
+            // researchManager, which is unavailable until game start.
+            // The fallout is that the initial icon for categories, if not set expl
+            // icitly, will always be the first defs icon - regardless of wether or 
+            // not that item is available.
+            get { return Find.ResearchManager != null 
+                    ? SubDesignators.Where( designator => designator.Visible ).ToList() 
+                    : SubDesignators; }
         }
 
         public override bool Visible
@@ -185,7 +193,7 @@ namespace ArchitectSense
                 var options = new List<FloatMenuOption>();
                 foreach ( Designator_SubCategoryItem designator in ValidSubDesignators )
                 {
-                    // TODO: Check if subdesignator is allowed (also check if this check is even needed, as !Visible is already skipped)
+                    // TODO: Check if subdesignator is allowed (also check if this check is even needed, as !Visible is already filtered out)
                     options.Add( new FloatMenuOption( designator.LabelCap, delegate
                     { Find.DesignatorManager.Select( designator ); } ) );
                 }

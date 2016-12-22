@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.SceneManagement;
 using Verse;
 
 namespace ArchitectSense
@@ -28,13 +29,12 @@ namespace ArchitectSense
 
         public static Controller Get => _instance;
         public static ModLogger GetLogger => _instance?.Logger;
-        public override string ModIdentifier => "ArchtectSense";
+        public override string ModIdentifier => "ArchitectSense";
 
         #endregion Properties
 
         #region Fields
-
-        // copypasta from Designator_Build
+        
         private static Controller _instance;
 
         #endregion Fields
@@ -52,8 +52,9 @@ namespace ArchitectSense
 
             return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
         }
+        
 
-        public override void Initialize()
+        public override void DefsLoaded()
         {
             Logger.Message( "Creating subcategories" );
 
