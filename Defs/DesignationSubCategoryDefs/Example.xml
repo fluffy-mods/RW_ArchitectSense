@@ -1,19 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-
-    <ArchitectSense.DesignationSubCategoryDef>
-        <debug>true</debug>
-        <defName>SubCategory_PowerNatural</defName>
-        <label>StoneFloors</label>
-        <description>Store your stuff.</description>
-        <defNames>
-            <li>WindTurbine</li>
-            <li>SolarGenerator</li>
-            <li>GeothermalGenerator</li>
-        </defNames>
-        <designationCategory>Power</designationCategory>
-    </ArchitectSense.DesignationSubCategoryDef>
-
     <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Chairs</defName>
     	<label>seats</label>
@@ -48,7 +34,23 @@
             <li>TileMarble</li>
         </defNames>
         <designationCategory>Floors</designationCategory>
+        <!-- Setting preview to false creates a subcategory dropdown that is visually extremely similar to the stuff selection menu.
+        However, you should not that this does overrule the vanilla stuff selection, so only use it for items that have no stuff, e.g. floors. -->
+    	<preview>false</preview>
         <debug>true</debug>
+    </ArchitectSense.DesignationSubCategoryDef>
+
+    <ArchitectSense.DesignationSubCategoryDef>
+        <debug>true</debug>
+        <defName>SubCategory_PowerNatural</defName>
+        <label>StoneFloors</label>
+        <description>Store your stuff.</description>
+        <defNames>
+            <li>WindTurbine</li>
+            <li>SolarGenerator</li>
+            <li>GeothermalGenerator</li>
+        </defNames>
+        <designationCategory>Power</designationCategory>
     </ArchitectSense.DesignationSubCategoryDef>
 
     <ArchitectSense.DesignationSubCategoryDef>

@@ -4,7 +4,6 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -12,18 +11,106 @@ using Verse;
 namespace ArchitectSense
 {
     [StaticConstructorOnStartup] // not actually needed - but suppresses warning.
-    internal class Designator_SubCategory : Designator
+    public class Designator_SubCategory : Designator
     {
         #region Fields
 
         public static Vector2 SubCategoryIndicatorSize = new Vector2( 16f, 16f );
+
         public static Texture2D SubCategoryIndicatorTexture =
             ContentFinder<Texture2D>.Get( "UI/Icons/SubcategoryIndicator" );
+
+        public readonly DesignationSubCategoryDef CategoryDef;
+
         public List<Designator_SubCategoryItem> SubDesignators = new List<Designator_SubCategoryItem>();
-        
+
+        private static readonly Vector2 TerrainTextureCroppedSize = new Vector2( 64f, 64f );
+
+        private Designator_SubCategoryItem _selected;
+
+        public Designator_SubCategory( DesignationSubCategoryDef categoryDef, List<Designator_Build> designators )
+        {
+            CategoryDef = categoryDef;
+            SubDesignators = designators.Select( d => new Designator_SubCategoryItem( d, this ) ).ToList();
+            defaultLabel = categoryDef.label;
+            defaultDesc = categoryDef.description;
+            SetDefaultIcon();
+        }
+
+        public Designator_SubCategoryItem SelectedItem
+        {
+            get
+            {
+                if ( _selected == null )
+                    _selected = ValidSubDesignators.First();
+
+                return _selected;
+            }
+            set
+            {
+                _selected = value;
+                SetDefaultIcon();
+            }
+        }
+
+        private void SetDefaultIcon()
+        {
+            if ( CategoryDef.graphicData != null )
+            {
+                // use graphic in subcategory def
+                icon = CategoryDef.graphicData.Graphic.MatSingle.mainTexture as Texture2D;
+                iconProportions = CategoryDef.graphicData.drawSize;
+            }
+            else
+                SetDesignatorIcon();
+        }
+
+        private void SetDesignatorIcon()
+        {
+            // use graphic in first designator
+            var entDef = Designator_SubCategoryItem.entDefFieldInfo.GetValue( SelectedItem ) as BuildableDef;
+
+            if ( entDef == null && CategoryDef.debug )
+            {
+                Controller.GetLogger.Warning( "Failed to get def for icon automatically." );
+            }
+            else
+            {
+                icon = entDef.uiIcon;
+                var thingDef = entDef as ThingDef;
+                if ( thingDef != null )
+                {
+                    iconProportions = thingDef.graphicData.drawSize;
+                    iconDrawScale = GenUI.IconDrawScale( thingDef );
+                }
+                else
+                {
+                    iconProportions = new Vector2( 1f, 1f );
+                    iconDrawScale = 1f;
+                }
+                if ( entDef is TerrainDef )
+                    iconTexCoords = new Rect( 0.0f, 0.0f,
+                                              TerrainTextureCroppedSize.x /
+                                              icon.width,
+                                              TerrainTextureCroppedSize.y /
+                                              icon.height );
+            }
+        }
+
         #endregion Fields
 
         #region Properties
+
+        public override Color IconDrawColor
+        {
+            get
+            {
+                if ( CategoryDef.graphicData != null )
+                    return CategoryDef.graphicData.color;
+                else
+                    return SelectedItem.IconDrawColor;
+            }
+        }
 
         public List<Designator_SubCategoryItem> ValidSubDesignators
         {
@@ -35,13 +122,14 @@ namespace ArchitectSense
             get { return ValidSubDesignators.Count > 0; }
         }
 
-        public override Color IconDrawColor => SubDesignators.First().IconDrawColor;
-
         #endregion Properties
 
         #region Methods
 
-        public override AcceptanceReport CanDesignateCell( IntVec3 loc ) { return false; }
+        public override AcceptanceReport CanDesignateCell( IntVec3 loc )
+        {
+            return false;
+        }
 
         public override GizmoResult GizmoOnGUI( Vector2 topLeft )
         {
@@ -55,25 +143,55 @@ namespace ArchitectSense
             return val;
         }
 
-        public override bool GroupsWith( Gizmo other ) { return false; }
+        public override bool GroupsWith( Gizmo other )
+        {
+            return false;
+        }
 
         public override void ProcessInput( Event ev )
         {
-            // if only one option, immediately skip to that option's processinput
+            // if only one option, immediately skip to that option's processinput, and stop further processing - for all intents and purposes it will act like a normal designator.
             if ( ValidSubDesignators.Count() == 1 )
             {
                 ValidSubDesignators.First().ProcessInput( ev );
                 return;
             }
 
-            var options = new List<FloatMenuOption_SubCategory>();
-            foreach ( Designator_Build designator in ValidSubDesignators )
+            // otherwise, mimick the normal stuff selection by re-selecting the last 'stuff' (designator), but also showing OUR floatmenu.
+            // Since our floatmenu will be called right after a possible stuff selection floatmenu, we should check if there's a stuff float menu - and close it.
+            Find.WindowStack.FloatMenu?.Close( false );
+            SelectedItem.ProcessInput( ev );
+            ShowOptions();
+        }
+        
+        private void ShowOptions()
+        {
+            if ( CategoryDef.preview )
             {
-                options.Add( new FloatMenuOption_SubCategory( designator.LabelCap,
-                                                              delegate { designator.ProcessInput( ev ); }, designator ) );
-            }
+                var options = new List<FloatMenuOption_SubCategory>();
+                foreach ( Designator_SubCategoryItem designator in ValidSubDesignators )
+                {
+                    // action is handled by FloatMenuOption_SubCategory
+                    // note that normally setting action to null would cause the option to be disabled, but
+                    // this behaviour is defined in the OnGui method, which we're overriding anyway.
+                    options.Add( new FloatMenuOption_SubCategory( designator, null ) );
+                }
 
-            Find.WindowStack.Add( new FloatMenu_SubCategory( options, null, new Vector2( 75, 75 ) ) );
+                Find.WindowStack.Add( new FloatMenu_SubCategory( options, null, new Vector2( 75, 75 ) ) );
+            }
+            else
+            {
+                // if we don't have to draw preview images, we can re-use the default floatmenu
+                var options = new List<FloatMenuOption>();
+                foreach ( Designator_SubCategoryItem designator in ValidSubDesignators )
+                {
+                    // TODO: Check if subdesignator is allowed (also check if this check is even needed, as !Visible is already skipped)
+                    options.Add( new FloatMenuOption( designator.LabelCap, delegate
+                    { Find.DesignatorManager.Select( designator ); } ) );
+                }
+
+                Find.WindowStack.Add( new FloatMenu( options, null ) );
+            }
         }
 
         #endregion Methods

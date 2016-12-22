@@ -1,24 +1,57 @@
-﻿using System;
+﻿// Karel Kroeze
+// Controller.cs
+// 2016-12-21
+
+using HugsLib;
+using HugsLib.Utils;
 using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HugsLib;
-using UnityEngine;
 using Verse;
 
 namespace ArchitectSense
 {
     public class Controller : ModBase
     {
+        #region Constructors
+
+        public Controller()
+        {
+            _instance = this;
+        }
+
+        #endregion Constructors
+
+        #region Properties
+
+        public static Controller Get => _instance;
+        public static ModLogger GetLogger => _instance?.Logger;
+        public override string ModIdentifier => "ArchtectSense";
+
+        #endregion Properties
+
         #region Fields
 
         // copypasta from Designator_Build
-        private static readonly Vector2 TerrainTextureCroppedSize = new Vector2(64f, 64f);
+        private static Controller _instance;
 
         #endregion Fields
 
         #region Methods
+
+        private static FieldInfo _resolvedDesignatorsFieldInfo =
+            typeof( DesignationCategoryDef ).GetField( "resolvedDesignators",
+                                                       BindingFlags.NonPublic | BindingFlags.Instance );
+
+        public List<Designator> GetresolvedDesignators( DesignationCategoryDef category )
+        {
+            if ( _resolvedDesignatorsFieldInfo == null )
+                throw new Exception( "resolvedDesignatorsFieldInfo not found!" );
+
+            return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
+        }
 
         public override void Initialize()
         {
@@ -30,10 +63,12 @@ namespace ArchitectSense
                 return;
             }
 
-            foreach ( DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading )
+            foreach ( DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading
+                )
             {
                 if ( category.debug )
-                    Logger.Message( "Creating subcategory {0} in category {1}", category.LabelCap, category.designationCategory );
+                    Logger.Message( "Creating subcategory {0} in category {1}", category.LabelCap,
+                                    category.designationCategory );
 
                 // cop out if main cat not found
                 if ( category.designationCategory == null )
@@ -43,7 +78,7 @@ namespace ArchitectSense
                 }
 
                 // set up sub category
-                List<Designator_SubCategoryItem> designators = new List<Designator_SubCategoryItem>();
+                var designators = new List<Designator_Build>();
 
                 // keep track of best position for the subcategory - it will replace the first subitem in the original category.
                 int FirstDesignatorIndex = -1;
@@ -74,12 +109,16 @@ namespace ArchitectSense
                     if ( bdef.designationCategory != category.designationCategory )
                     {
                         if ( category.debug )
-                            Logger.Warning( "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.", defName );
+                            Logger.Warning(
+                                           "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.",
+                                           defName );
                         continue;
                     }
 
                     // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
-                    Designator_Build bdefDesignator = resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as Designator_Build;
+                    var bdefDesignator =
+                        resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as
+                        Designator_Build;
                     if ( category.debug && bdefDesignator == null )
                         Log.Warning( "No designator found with matching entity def! Skipping." );
 
@@ -91,7 +130,7 @@ namespace ArchitectSense
                         if ( FirstDesignatorIndex < 0 || index < FirstDesignatorIndex )
                             FirstDesignatorIndex = index;
 
-                        designators.Add( new Designator_SubCategoryItem( bdefDesignator ) );
+                        designators.Add(  bdefDesignator );
                         resolvedDesignators.Remove( bdefDesignator );
 
                         if ( category.debug )
@@ -104,50 +143,7 @@ namespace ArchitectSense
                 if ( !designators.NullOrEmpty() )
                 {
                     // create subcategory
-                    Designator_SubCategory subCategory = new Designator_SubCategory();
-                    subCategory.SubDesignators = designators;
-                    subCategory.defaultLabel = category.label;
-                    subCategory.defaultDesc = category.description;
-
-                    // set the icon
-                    if ( category.graphicData != null )
-                    {
-                        // use graphic in subcategory def
-                        subCategory.icon = category.graphicData.Graphic.MatSingle.mainTexture as Texture2D;
-                        subCategory.iconProportions = category.graphicData.drawSize;
-                        subCategory.iconProportions = new Vector2( 1f, 1f );
-                    }
-                    else
-                    {
-                        // use graphic in first designator
-                        BuildableDef entDef = Designator_SubCategoryItem.entDefFieldInfo.GetValue( subCategory.SubDesignators.First() ) as BuildableDef;
-
-                        if ( entDef == null && category.debug )
-                        {
-                            Logger.Warning( "Failed to get def for icon automatically." );
-                        }
-                        else
-                        {
-                            subCategory.icon = entDef.uiIcon;
-                            ThingDef thingDef = entDef as ThingDef;
-                            if ( thingDef != null )
-                            {
-                                subCategory.iconProportions = thingDef.graphicData.drawSize;
-                                subCategory.iconDrawScale = GenUI.IconDrawScale( thingDef );
-                            }
-                            else
-                            {
-                                subCategory.iconProportions = new Vector2( 1f, 1f );
-                                subCategory.iconDrawScale = 1f;
-                            }
-                            if ( entDef is TerrainDef )
-                                subCategory.iconTexCoords = new Rect( 0.0f, 0.0f,
-                                                                      TerrainTextureCroppedSize.x /
-                                                                      subCategory.icon.width,
-                                                                      TerrainTextureCroppedSize.y /
-                                                                      subCategory.icon.height );
-                        }
-                    }
+                    var subCategory = new Designator_SubCategory( category, designators );
 
                     // insert to replace first designator removed
                     // Log.Message( string.Join( ", ", resolvedDesignators.Select( d => d.LabelCap ).ToArray() ) );
@@ -169,23 +165,11 @@ namespace ArchitectSense
             // in which case, reflection fails WITHOUT THROWING AN ERROR!
             if ( des == null )
                 return false;
-            return ( Designator_SubCategoryItem.entDefFieldInfo.GetValue( des ) as BuildableDef )?.defName == def.defName;
-        }
 
-        private static FieldInfo _resolvedDesignatorsFieldInfo =
-            typeof( DesignationCategoryDef ).GetField( "resolvedDesignators",
-                                                       BindingFlags.NonPublic | BindingFlags.Instance );
-
-        public List<Designator> GetresolvedDesignators( DesignationCategoryDef category )
-        {
-            if (_resolvedDesignatorsFieldInfo == null )
-                throw new Exception( "resolvedDesignatorsFieldInfo not found!" );
-                
-            return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
+            return ( Designator_SubCategoryItem.entDefFieldInfo.GetValue( des ) as BuildableDef )?.defName ==
+                   def.defName;
         }
 
         #endregion Methods
-
-        public override string ModIdentifier => "ArchtectSense";
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using RimWorld;
+﻿using RimWorld;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -8,16 +8,40 @@ namespace ArchitectSense
 {
     public class Designator_SubCategoryItem : Designator_Build
     {
+        #region Fields
+
         // provide access to Designator_Build.entDef
+        private Designator_SubCategory subCategory;
         public static FieldInfo entDefFieldInfo = typeof (Designator_Build).GetField( "entDef",
                                                                               BindingFlags.NonPublic |
                                                                               BindingFlags.Instance );
-        
+
+        #endregion Fields
+
+        #region Constructors
+
         // default constructor from ThingDef, forwarded to base.
-        public Designator_SubCategoryItem( ThingDef entDef ) : base( entDef ) {}
+        public Designator_SubCategoryItem( ThingDef entDef, Designator_SubCategory subCategory ) : base( entDef )
+        {
+            this.subCategory = subCategory;
+        }
 
         // constructor from Designator_Build, links to constructor from ThingDef.
-        public Designator_SubCategoryItem( Designator_Build designator ) : base( entDefFieldInfo.GetValue( designator ) as BuildableDef ) {}
+        public Designator_SubCategoryItem( Designator_Build designator, Designator_SubCategory subCategory )
+            : base( entDefFieldInfo.GetValue( designator ) as BuildableDef )
+        {
+            this.subCategory = subCategory;
+        }
+
+        #endregion Constructors
+
+        #region Methods
+
+        public override void Selected()
+        {
+            base.Selected();
+            subCategory.SelectedItem = this;
+        }
 
         public override GizmoResult GizmoOnGUI( Vector2 topLeft )
         {
@@ -26,15 +50,15 @@ namespace ArchitectSense
             Color transparency = GUI.color;
 
             // below is 99% copypasta from Designator_Build, with minor naming changes and taking account of transparency.
-            Rect buttonRect = new Rect(topLeft.x, topLeft.y, Width, 75f);
+            Rect buttonRect = new Rect( topLeft.x, topLeft.y, Width, 75f );
             bool mouseover = false;
-            if( Mouse.IsOver( buttonRect ) )
+            if ( Mouse.IsOver( buttonRect ) )
             {
                 mouseover = true;
                 GUI.color = GenUI.MouseoverColor * transparency;
             }
             Texture2D tex = icon;
-            if( tex == null )
+            if ( tex == null )
                 tex = BaseContent.BadTex;
             GUI.DrawTexture( buttonRect, BGTex );
             MouseoverSounds.DoRegion( buttonRect, SoundDefOf.MouseoverCommand );
@@ -43,23 +67,23 @@ namespace ArchitectSense
             GUI.color = Color.white * transparency;
             bool clicked = false;
             KeyCode keyCode = hotKey != null ? hotKey.MainKey : KeyCode.None;
-            if( keyCode != KeyCode.None && !GizmoGridDrawer.drawnHotKeys.Contains( keyCode ) )
+            if ( keyCode != KeyCode.None && !GizmoGridDrawer.drawnHotKeys.Contains( keyCode ) )
             {
                 Widgets.Label( new Rect( buttonRect.x + 5f, buttonRect.y + 5f, 16f, 18f ), keyCode.ToString() );
                 GizmoGridDrawer.drawnHotKeys.Add( keyCode );
-                if( hotKey.KeyDownEvent )
+                if ( hotKey.KeyDownEvent )
                 {
                     clicked = true;
                     Event.current.Use();
                 }
             }
-            if( Widgets.ButtonInvisible( buttonRect ) )
+            if ( Widgets.ButtonInvisible( buttonRect ) )
                 clicked = true;
             string labelCap = LabelCap;
-            if( !labelCap.NullOrEmpty() )
+            if ( !labelCap.NullOrEmpty() )
             {
-                float height = Text.CalcHeight(labelCap, buttonRect.width) - 2f;
-                Rect rect2 = new Rect(buttonRect.x, (float) (buttonRect.yMax - (double) height + 12.0), buttonRect.width, height);
+                float height = Text.CalcHeight( labelCap, buttonRect.width ) - 2f;
+                Rect rect2 = new Rect( buttonRect.x, (float)( buttonRect.yMax - (double)height + 12.0 ), buttonRect.width, height );
                 GUI.DrawTexture( rect2, TexUI.GrayTextBG );
                 GUI.color = Color.white * transparency;
                 Text.Anchor = TextAnchor.UpperCenter;
@@ -67,10 +91,10 @@ namespace ArchitectSense
                 Text.Anchor = TextAnchor.UpperLeft;
             }
             GUI.color = Color.white;
-            if( DoTooltip )
+            if ( DoTooltip )
             {
                 TipSignal tip = Desc;
-                if( disabled && !disabledReason.NullOrEmpty() )
+                if ( disabled && !disabledReason.NullOrEmpty() )
                 {
                     TipSignal local = @tip;
                     local.text += "\n\nDISABLED: " + disabledReason;
@@ -81,18 +105,19 @@ namespace ArchitectSense
             //if( !tutorHighlightTag.NullOrEmpty() )
             //    TutorUIHighlighter.HighlightOpportunity( tutorHighlightTag, buttonRect );
 
-
-            if( clicked )
+            if ( clicked )
             {
-                if( !disabled )
+                if ( !disabled )
                     return new GizmoResult( GizmoState.Interacted, Event.current );
-                if( !disabledReason.NullOrEmpty() )
+                if ( !disabledReason.NullOrEmpty() )
                     Messages.Message( disabledReason, MessageSound.RejectInput );
                 return new GizmoResult( GizmoState.Mouseover, null );
             }
-            if( mouseover )
+            if ( mouseover )
                 return new GizmoResult( GizmoState.Mouseover, null );
             return new GizmoResult( GizmoState.Clear, null );
         }
+
+        #endregion Methods
     }
 }
