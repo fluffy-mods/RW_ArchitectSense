@@ -120,7 +120,7 @@ namespace ArchitectSense
             // The fallout is that the initial icon for categories, if not set expl
             // icitly, will always be the first defs icon - regardless of wether or 
             // not that item is available.
-            get { return Find.ResearchManager != null 
+            get { return Current.Game?.researchManager != null 
                     ? SubDesignators.Where( designator => designator.Visible ).ToList() 
                     : SubDesignators; }
         }
