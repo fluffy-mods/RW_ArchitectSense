@@ -13,20 +13,18 @@ namespace ArchitectSense
     [StaticConstructorOnStartup] // not actually needed - but suppresses warning.
     public class Designator_SubCategory : Designator
     {
-        #region Fields
-
         public static Vector2 SubCategoryIndicatorSize = new Vector2( 16f, 16f );
 
         public static Texture2D SubCategoryIndicatorTexture =
             ContentFinder<Texture2D>.Get( "UI/Icons/SubcategoryIndicator" );
 
-        public readonly DesignationSubCategoryDef CategoryDef;
-
-        public List<Designator_SubCategoryItem> SubDesignators = new List<Designator_SubCategoryItem>();
-
         private static readonly Vector2 TerrainTextureCroppedSize = new Vector2( 64f, 64f );
 
+        public readonly DesignationSubCategoryDef CategoryDef;
+
         private Designator_SubCategoryItem _selected;
+
+        public List<Designator_SubCategoryItem> SubDesignators = new List<Designator_SubCategoryItem>();
 
         public Designator_SubCategory( DesignationSubCategoryDef categoryDef, List<Designator_Build> designators )
         {
@@ -51,6 +49,38 @@ namespace ArchitectSense
                 _selected = value;
                 SetDefaultIcon();
             }
+        }
+
+        public override Color IconDrawColor
+        {
+            get
+            {
+                if ( CategoryDef.graphicData != null )
+                    return CategoryDef.graphicData.color;
+
+                return SelectedItem.IconDrawColor;
+            }
+        }
+
+        public List<Designator_SubCategoryItem> ValidSubDesignators
+        {
+            // currently we're initializing in the defsLoaded HugsLib callback,
+            // but this is not ideal as calls to designator.Visible require the
+            // researchManager, which is unavailable until game start.
+            // The fallout is that the initial icon for categories, if not set expl
+            // icitly, will always be the first defs icon - regardless of wether or
+            // not that item is available.
+            get
+            {
+                return Current.Game?.researchManager != null
+                           ? SubDesignators.Where( designator => designator.Visible ).ToList()
+                           : SubDesignators;
+            }
+        }
+
+        public override bool Visible
+        {
+            get { return ValidSubDesignators.Count > 0; }
         }
 
         private void SetDefaultIcon()
@@ -97,47 +127,7 @@ namespace ArchitectSense
             }
         }
 
-        #endregion Fields
-
-        #region Properties
-
-        public override Color IconDrawColor
-        {
-            get
-            {
-                if ( CategoryDef.graphicData != null )
-                    return CategoryDef.graphicData.color;
-                else
-                    return SelectedItem.IconDrawColor;
-            }
-        }
-
-        public List<Designator_SubCategoryItem> ValidSubDesignators
-        {
-            // currently we're initializing in the defsLoaded HugsLib callback, 
-            // but this is not ideal as calls to designator.Visible require the 
-            // researchManager, which is unavailable until game start.
-            // The fallout is that the initial icon for categories, if not set expl
-            // icitly, will always be the first defs icon - regardless of wether or 
-            // not that item is available.
-            get { return Current.Game?.researchManager != null 
-                    ? SubDesignators.Where( designator => designator.Visible ).ToList() 
-                    : SubDesignators; }
-        }
-
-        public override bool Visible
-        {
-            get { return ValidSubDesignators.Count > 0; }
-        }
-
-        #endregion Properties
-
-        #region Methods
-
-        public override AcceptanceReport CanDesignateCell( IntVec3 loc )
-        {
-            return false;
-        }
+        public override AcceptanceReport CanDesignateCell( IntVec3 loc ) { return false; }
 
         public override GizmoResult GizmoOnGUI( Vector2 topLeft )
         {
@@ -151,10 +141,7 @@ namespace ArchitectSense
             return val;
         }
 
-        public override bool GroupsWith( Gizmo other )
-        {
-            return false;
-        }
+        public override bool GroupsWith( Gizmo other ) { return false; }
 
         public override void ProcessInput( Event ev )
         {
@@ -171,7 +158,7 @@ namespace ArchitectSense
             SelectedItem.ProcessInput( ev );
             ShowOptions();
         }
-        
+
         private void ShowOptions()
         {
             if ( CategoryDef.preview )
@@ -194,14 +181,12 @@ namespace ArchitectSense
                 foreach ( Designator_SubCategoryItem designator in ValidSubDesignators )
                 {
                     // TODO: Check if subdesignator is allowed (also check if this check is even needed, as !Visible is already filtered out)
-                    options.Add( new FloatMenuOption( designator.LabelCap, delegate
-                    { Find.DesignatorManager.Select( designator ); } ) );
+                    options.Add( new FloatMenuOption( designator.LabelCap,
+                                                      delegate { Find.DesignatorManager.Select( designator ); } ) );
                 }
 
                 Find.WindowStack.Add( new FloatMenu( options, null ) );
             }
         }
-
-        #endregion Methods
     }
 }

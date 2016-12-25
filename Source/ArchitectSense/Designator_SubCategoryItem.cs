@@ -1,5 +1,9 @@
-﻿using RimWorld;
+﻿// Karel Kroeze
+// Designator_SubCategoryItem.cs
+// 2016-12-21
+
 using System.Reflection;
+using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
@@ -8,17 +12,12 @@ namespace ArchitectSense
 {
     public class Designator_SubCategoryItem : Designator_Build
     {
-        #region Fields
-
         // provide access to Designator_Build.entDef
+        public static FieldInfo entDefFieldInfo = typeof( Designator_Build ).GetField( "entDef",
+                                                                                       BindingFlags.NonPublic |
+                                                                                       BindingFlags.Instance );
+
         private Designator_SubCategory subCategory;
-        public static FieldInfo entDefFieldInfo = typeof (Designator_Build).GetField( "entDef",
-                                                                              BindingFlags.NonPublic |
-                                                                              BindingFlags.Instance );
-
-        #endregion Fields
-
-        #region Constructors
 
         // default constructor from ThingDef, forwarded to base.
         public Designator_SubCategoryItem( ThingDef entDef, Designator_SubCategory subCategory ) : base( entDef )
@@ -33,16 +32,6 @@ namespace ArchitectSense
             this.subCategory = subCategory;
         }
 
-        #endregion Constructors
-
-        #region Methods
-
-        public override void Selected()
-        {
-            base.Selected();
-            subCategory.SelectedItem = this;
-        }
-
         public override GizmoResult GizmoOnGUI( Vector2 topLeft )
         {
             // start GUI.color is the transparency set by our floatmenu parent
@@ -50,8 +39,8 @@ namespace ArchitectSense
             Color transparency = GUI.color;
 
             // below is 99% copypasta from Designator_Build, with minor naming changes and taking account of transparency.
-            Rect buttonRect = new Rect( topLeft.x, topLeft.y, Width, 75f );
-            bool mouseover = false;
+            var buttonRect = new Rect( topLeft.x, topLeft.y, Width, 75f );
+            var mouseover = false;
             if ( Mouse.IsOver( buttonRect ) )
             {
                 mouseover = true;
@@ -63,9 +52,10 @@ namespace ArchitectSense
             GUI.DrawTexture( buttonRect, BGTex );
             MouseoverSounds.DoRegion( buttonRect, SoundDefOf.MouseoverCommand );
             GUI.color = IconDrawColor * transparency;
-            Widgets.DrawTextureFitted( new Rect( buttonRect ), tex, iconDrawScale * 0.85f, iconProportions, iconTexCoords );
+            Widgets.DrawTextureFitted( new Rect( buttonRect ), tex, iconDrawScale * 0.85f, iconProportions,
+                                       iconTexCoords );
             GUI.color = Color.white * transparency;
-            bool clicked = false;
+            var clicked = false;
             KeyCode keyCode = hotKey != null ? hotKey.MainKey : KeyCode.None;
             if ( keyCode != KeyCode.None && !GizmoGridDrawer.drawnHotKeys.Contains( keyCode ) )
             {
@@ -83,7 +73,8 @@ namespace ArchitectSense
             if ( !labelCap.NullOrEmpty() )
             {
                 float height = Text.CalcHeight( labelCap, buttonRect.width ) - 2f;
-                Rect rect2 = new Rect( buttonRect.x, (float)( buttonRect.yMax - (double)height + 12.0 ), buttonRect.width, height );
+                var rect2 = new Rect( buttonRect.x, (float) ( buttonRect.yMax - (double) height + 12.0 ),
+                                      buttonRect.width, height );
                 GUI.DrawTexture( rect2, TexUI.GrayTextBG );
                 GUI.color = Color.white * transparency;
                 Text.Anchor = TextAnchor.UpperCenter;
@@ -96,7 +87,7 @@ namespace ArchitectSense
                 TipSignal tip = Desc;
                 if ( disabled && !disabledReason.NullOrEmpty() )
                 {
-                    TipSignal local = @tip;
+                    TipSignal local = tip;
                     local.text += "\n\nDISABLED: " + disabledReason;
                 }
                 TooltipHandler.TipRegion( buttonRect, tip );
@@ -109,15 +100,22 @@ namespace ArchitectSense
             {
                 if ( !disabled )
                     return new GizmoResult( GizmoState.Interacted, Event.current );
+
                 if ( !disabledReason.NullOrEmpty() )
                     Messages.Message( disabledReason, MessageSound.RejectInput );
                 return new GizmoResult( GizmoState.Mouseover, null );
             }
+
             if ( mouseover )
                 return new GizmoResult( GizmoState.Mouseover, null );
+
             return new GizmoResult( GizmoState.Clear, null );
         }
 
-        #endregion Methods
+        public override void Selected()
+        {
+            base.Selected();
+            subCategory.SelectedItem = this;
+        }
     }
 }

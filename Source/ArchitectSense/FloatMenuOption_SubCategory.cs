@@ -1,11 +1,9 @@
-// ArchitectSense/FloatMenuOption_SubCategory.cs
-//
-// Copyright Karel Kroeze, 2016.
-//
-// Created 2016-02-15 23:59
+// Karel Kroeze
+// FloatMenuOption_SubCategory.cs
+// 2016-12-21
 
-using RimWorld;
 using System;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -13,15 +11,10 @@ namespace ArchitectSense
 {
     internal class FloatMenuOption_SubCategory : FloatMenuOption
     {
-        #region Fields
-
         public Texture2D backgroundTexture = ContentFinder<Texture2D>.Get( "UI/Widgets/DesButBG" );
         public Designator_Build gizmo;
         public Color mouseOverColor = new Color( 1f, 0.92f, 0.6f );
 
-        #endregion Fields
-
-        #region Constructors
 
         public FloatMenuOption_SubCategory( Designator_SubCategoryItem designator,
                                             Action action,
@@ -30,19 +23,11 @@ namespace ArchitectSense
                                             Thing revalidateClickTarget = null )
             : base( designator.LabelCap, action, priority, mouseoverGuiAction, revalidateClickTarget )
         {
-            this.gizmo = designator;
+            gizmo = designator;
         }
-
-        #endregion Constructors
-
-        #region Properties
 
         // TODO: implement allowed logic.
         public bool Allowed => true;
-
-        #endregion Properties
-
-        #region Methods
 
         public override bool DoGUI( Rect rect, bool pawnOrder )
         {
@@ -54,7 +39,5 @@ namespace ArchitectSense
             // return clicks.
             return Widgets.ButtonInvisible( rect );
         }
-
-        #endregion Methods
     }
 }

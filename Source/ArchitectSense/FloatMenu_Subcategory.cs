@@ -1,5 +1,10 @@
-﻿using System.Collections.Generic;
+﻿// Karel Kroeze
+// FloatMenu_Subcategory.cs
+// 2016-12-21
+
+using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -7,20 +12,6 @@ namespace ArchitectSense
 {
     internal class FloatMenu_SubCategory : FloatMenu
     {
-        #region Fields
-
-        private const float _margin = 5f;
-        private bool _closeOnSelection;
-        private List<FloatMenuOption_SubCategory> _options;
-        private Vector2 _optionSize;
-
-        // copypasta from base (privates, ugh)
-        private Color baseColor;
-
-        private int numColumns;
-
-        #endregion Fields
-
         #region Constructors
 
         /// <summary>
@@ -32,9 +23,9 @@ namespace ArchitectSense
         /// <param name="iconSize"></param>
         /// <param name="closeOnSelection"></param>
         public FloatMenu_SubCategory( List<FloatMenuOption_SubCategory> options,
-                                     string title,
-                                     Vector2 optionSize,
-                                     bool closeOnSelection = false )
+                                      string title,
+                                      Vector2 optionSize,
+                                      bool closeOnSelection = false )
             : base( options.Select( opt => opt as FloatMenuOption ).ToList(), title )
         {
             _options = options;
@@ -50,8 +41,8 @@ namespace ArchitectSense
             do
             {
                 ++numColumns;
-            }
-            while ( TotalHeight > Screen.height * .9 );
+            } while ( TotalHeight > Screen.height * .9 );
+
             windowRect.size = InitialSize;
 
             // first off, move float so it goes up from the mouse click instead of down
@@ -59,11 +50,11 @@ namespace ArchitectSense
 
             // tweak rect position to fit within window
             // note: we're assuming up, then right placement of buttons now.
-            if ( windowRect.xMax > (double)Screen.width )
+            if ( windowRect.xMax > (double) Screen.width )
                 windowRect.x = Screen.width - windowRect.width;
             if ( windowRect.yMin < 0f )
                 windowRect.y -= windowRect.yMin;
-            if ( windowRect.yMax > (double)Screen.height )
+            if ( windowRect.yMax > (double) Screen.height )
                 windowRect.y = Screen.height - windowRect.height;
         }
 
@@ -79,8 +70,8 @@ namespace ArchitectSense
             GUI.color = baseColor;
             Vector2 listRoot = ListRoot;
             Text.Font = GameFont.Small;
-            int row = 0;
-            int col = 0;
+            var row = 0;
+            var col = 0;
 
             if ( _options.NullOrEmpty() )
                 return;
@@ -88,7 +79,7 @@ namespace ArchitectSense
             Text.Font = GameFont.Tiny;
             foreach ( FloatMenuOption_SubCategory option in _options.OrderByDescending( op => op.Priority ) )
             {
-                Rect optionRect = new Rect( listRoot.x + col * ( _optionSize.x + _margin ),
+                var optionRect = new Rect( listRoot.x + col * ( _optionSize.x + _margin ),
                                            listRoot.y + row * ( _optionSize.y + _margin ),
                                            _optionSize.x, _optionSize.y );
 
@@ -101,6 +92,7 @@ namespace ArchitectSense
                         Find.WindowStack.TryRemove( this, true );
                     return;
                 }
+
                 row++;
                 if ( row >= ColumnMaxOptionCount )
                 {
@@ -108,11 +100,26 @@ namespace ArchitectSense
                     col++;
                 }
             }
+
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
         }
 
         #endregion Methods
+
+        #region Fields
+
+        private const float _margin = 5f;
+        private bool _closeOnSelection;
+        private List<FloatMenuOption_SubCategory> _options;
+        private Vector2 _optionSize;
+
+        // copypasta from base (privates, ugh)
+        private Color baseColor;
+
+        private int numColumns;
+
+        #endregion Fields
 
         #region copypasta from Verse.FloatMenu
 
@@ -122,6 +129,7 @@ namespace ArchitectSense
             {
                 if ( _options.NullOrEmpty() )
                     return new Vector2( 0.0f, 0.0f );
+
                 return new Vector2( TotalWidth, TotalHeight );
             }
         }
@@ -132,24 +140,19 @@ namespace ArchitectSense
             {
                 if ( options.Count % numColumns == 0 )
                     return options.Count / numColumns;
+
                 return options.Count / numColumns + 1;
             }
         }
 
         private Vector2 ListRoot
         {
-            get
-            {
-                return new Vector2( 4f, 0.0f );
-            }
+            get { return new Vector2( 4f, 0.0f ); }
         }
 
         private Rect OverRect
         {
-            get
-            {
-                return new Rect( ListRoot.x, ListRoot.y, TotalWidth, TotalHeight );
-            }
+            get { return new Rect( ListRoot.x, ListRoot.y, TotalWidth, TotalHeight ); }
         }
 
         private float TotalHeight
@@ -163,10 +166,7 @@ namespace ArchitectSense
 
         private float TotalWidth
         {
-            get
-            {
-                return numColumns * ( _optionSize.x + _margin );
-            }
+            get { return numColumns * ( _optionSize.x + _margin ); }
         }
 
         private void UpdateBaseColor()
@@ -174,13 +174,16 @@ namespace ArchitectSense
             baseColor = Color.white;
             if ( !vanishIfMouseDistant )
                 return;
+
             Rect r = OverRect.ContractedBy( -12f );
             if ( r.Contains( Event.current.mousePosition ) )
                 return;
+
             float distanceFromRect = GenUI.DistFromRect( r, Event.current.mousePosition );
-            baseColor = new Color( 1f, 1f, 1f, (float)( 1.0 - distanceFromRect / 200.0 ) );
+            baseColor = new Color( 1f, 1f, 1f, (float) ( 1.0 - distanceFromRect / 200.0 ) );
             if ( distanceFromRect <= 200.0 )
                 return;
+
             Close( false );
             Cancel();
         }

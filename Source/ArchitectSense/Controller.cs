@@ -2,26 +2,33 @@
 // Controller.cs
 // 2016-12-21
 
-using HugsLib;
-using HugsLib.Utils;
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine.SceneManagement;
+using HugsLib;
+using HugsLib.Utils;
+using RimWorld;
+using UnityEngine;
 using Verse;
 
 namespace ArchitectSense
 {
     public class Controller : ModBase
     {
+        #region Fields
+
+        private static Controller _instance;
+
+        private static FieldInfo _resolvedDesignatorsFieldInfo =
+            typeof( DesignationCategoryDef ).GetField( "resolvedDesignators",
+                                                       BindingFlags.NonPublic | BindingFlags.Instance );
+
+        #endregion Fields
+
         #region Constructors
 
-        public Controller()
-        {
-            _instance = this;
-        }
+        public Controller() { _instance = this; }
 
         #endregion Constructors
 
@@ -33,26 +40,54 @@ namespace ArchitectSense
 
         #endregion Properties
 
-        #region Fields
-        
-        private static Controller _instance;
-
-        #endregion Fields
-
         #region Methods
+        public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
+                                           List<TerrainDef> terrainDefs, int position = -1 )
+        {
+            AddSubCategory( categoryDef, subcategoryDef, terrainDefs.Select( def => def as BuildableDef ).ToList(),
+                            position );
+        }
 
-        private static FieldInfo _resolvedDesignatorsFieldInfo =
-            typeof( DesignationCategoryDef ).GetField( "resolvedDesignators",
-                                                       BindingFlags.NonPublic | BindingFlags.Instance );
+        public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
+                                           List<ThingDef> thingDefs, int position = -1 )
+        {
+            AddSubCategory( categoryDef, subcategoryDef, thingDefs.Select( def => def as BuildableDef ).ToList(),
+                            position );
+        }
 
-        public List<Designator> GetresolvedDesignators( DesignationCategoryDef category )
+        public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
+                                           List<BuildableDef> buildableDefs, int position = -1 )
+        {
+            // cop out on null
+            if ( categoryDef == null )
+                throw new ArgumentNullException( nameof( categoryDef ) );
+
+            // get designation category's resolved designators
+            List<Designator> resolvedDesignators = GetResolvedDesignators( categoryDef );
+
+            // check position argument
+            if ( position > resolvedDesignators.Count )
+                throw new ArgumentOutOfRangeException( nameof( position ) );
+
+            // create subcategory
+            var subcategory = new Designator_SubCategory( subcategoryDef,
+                                                          buildableDefs.Select( bd => new Designator_Build( bd ) )
+                                                                       .ToList() );
+
+            // if no position is specified, add it at the end
+            if ( position < 0 )
+                resolvedDesignators.Add( subcategory );
+            else
+                resolvedDesignators.Insert( position, subcategory );
+        }
+
+        public static List<Designator> GetResolvedDesignators( DesignationCategoryDef category )
         {
             if ( _resolvedDesignatorsFieldInfo == null )
                 throw new Exception( "resolvedDesignatorsFieldInfo not found!" );
 
             return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
         }
-        
 
         public override void DefsLoaded()
         {
@@ -85,7 +120,7 @@ namespace ArchitectSense
                 int FirstDesignatorIndex = -1;
 
                 // get list of current designators in the category
-                List<Designator> resolvedDesignators = GetresolvedDesignators( category.designationCategory );
+                List<Designator> resolvedDesignators = GetResolvedDesignators( category.designationCategory );
 
                 // start adding designators to it
                 foreach ( string defName in category.defNames )
@@ -131,7 +166,7 @@ namespace ArchitectSense
                         if ( FirstDesignatorIndex < 0 || index < FirstDesignatorIndex )
                             FirstDesignatorIndex = index;
 
-                        designators.Add(  bdefDesignator );
+                        designators.Add( bdefDesignator );
                         resolvedDesignators.Remove( bdefDesignator );
 
                         if ( category.debug )
