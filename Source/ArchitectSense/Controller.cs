@@ -41,6 +41,17 @@ namespace ArchitectSense
         #endregion Properties
 
         #region Methods
+        /// <summary>
+        /// Creates a subcategory based on subcategoryDef in categoryDef at position, containing elements terrainDefs.
+        /// Position defaults to adding on the right. 
+        /// 
+        /// Note that if designators for the terrains in terrainDefs already exist, they will NOT be removed - this method
+        /// creates NEW designators, and is primarily meant for mods that programatically generate defs.
+        /// </summary>
+        /// <param name="categoryDef"></param>
+        /// <param name="subcategoryDef"></param>
+        /// <param name="terrainDefs"></param>
+        /// <param name="position"></param>
         public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
                                            List<TerrainDef> terrainDefs, int position = -1 )
         {
@@ -48,6 +59,17 @@ namespace ArchitectSense
                             position );
         }
 
+        /// <summary>
+        /// Creates a subcategory based on subcategoryDef in categoryDef at position, containing elements thingDefs.
+        /// Position defaults to adding on the right. 
+        /// 
+        /// Note that if designators for the terrains in thingDefs already exist, they will NOT be removed - this method
+        /// creates NEW designators, and is primarily meant for mods that programatically generate defs.
+        /// </summary>
+        /// <param name="categoryDef"></param>
+        /// <param name="subcategoryDef"></param>
+        /// <param name="thingDefs"></param>
+        /// <param name="position"></param>
         public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
                                            List<ThingDef> thingDefs, int position = -1 )
         {
@@ -55,6 +77,17 @@ namespace ArchitectSense
                             position );
         }
 
+        /// <summary>
+        /// Creates a subcategory based on subcategoryDef in categoryDef at position, containing elements buildableDefs.
+        /// Position defaults to adding on the right. 
+        /// 
+        /// Note that if designators for the terrains in buildableDefs already exist, they will NOT be removed - this method
+        /// creates NEW designators, and is primarily meant for mods that programatically generate defs.
+        /// </summary>
+        /// <param name="categoryDef"></param>
+        /// <param name="subcategoryDef"></param>
+        /// <param name="buildableDefs"></param>
+        /// <param name="position"></param>
         public static void AddSubCategory( DesignationCategoryDef categoryDef, DesignationSubCategoryDef subcategoryDef,
                                            List<BuildableDef> buildableDefs, int position = -1 )
         {
@@ -80,13 +113,19 @@ namespace ArchitectSense
             else
                 resolvedDesignators.Insert( position, subcategory );
         }
-
+        
         public static List<Designator> GetResolvedDesignators( DesignationCategoryDef category )
         {
             if ( _resolvedDesignatorsFieldInfo == null )
                 throw new Exception( "resolvedDesignatorsFieldInfo not found!" );
+            if (category == null)
+                throw new ArgumentNullException( nameof( category ) );
 
-            return _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
+            var res = _resolvedDesignatorsFieldInfo.GetValue( category ) as List<Designator>;
+            if (res == null)
+                throw new Exception( "Resolved designators for " + category.defName + " is NULL!" );
+
+            return res;
         }
 
         public override void DefsLoaded()
@@ -117,63 +156,60 @@ namespace ArchitectSense
                 var designators = new List<Designator_Build>();
 
                 // keep track of best position for the subcategory - it will replace the first subitem in the original category.
-                int FirstDesignatorIndex = -1;
+                int firstDesignatorIndex = -1;
 
                 // get list of current designators in the category
                 List<Designator> resolvedDesignators = GetResolvedDesignators( category.designationCategory );
 
                 // start adding designators to it
-                foreach ( string defName in category.defNames )
-                {
-                    BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail( defName );
-
-                    if ( bdef == null )
+                if ( category.defNames != null )
+                    foreach ( string defName in category.defNames )
                     {
-                        bdef = DefDatabase<TerrainDef>.GetNamedSilentFail( defName );
+                        BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail( defName ) ??
+                                            (BuildableDef) DefDatabase<TerrainDef>.GetNamedSilentFail( defName );
+
+                        // do some common error checking
+                        // buildable def exists
+                        if ( bdef == null )
+                        {
+                            if ( category.debug )
+                                Logger.Warning( "ThingDef {0} not found! Skipping.", defName );
+                            continue;
+                        }
+
+                        // main designation categories match
+                        if ( bdef.designationCategory != category.designationCategory )
+                        {
+                            if ( category.debug )
+                                Logger.Warning(
+                                               "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.",
+                                               defName );
+                            continue;
+                        }
+
+                        // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
+                        var bdefDesignator =
+                            resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as
+                            Designator_Build;
+                        if ( category.debug && bdefDesignator == null )
+                            Log.Warning( "No designator found with matching entity def! Skipping." );
+
+                        // if not null, add designator to the subcategory, and remove from main category
+                        if ( bdefDesignator != null )
+                        {
+                            // find index, and update FirstDesignatorIndex
+                            int index = resolvedDesignators.IndexOf( bdefDesignator );
+                            if ( firstDesignatorIndex < 0 || index < firstDesignatorIndex )
+                                firstDesignatorIndex = index;
+
+                            designators.Add( bdefDesignator );
+                            resolvedDesignators.Remove( bdefDesignator );
+
+                            if ( category.debug )
+                                Logger.Message( "ThingDef {0} passed checks and was added to subcategory.", defName );
+                        }
+                        // done with this designator
                     }
-
-                    // do some common error checking
-                    // buildable def exists
-                    if ( bdef == null )
-                    {
-                        if ( category.debug )
-                            Logger.Warning( "ThingDef {0} not found! Skipping.", defName );
-                        continue;
-                    }
-
-                    // main designation categories match
-                    if ( bdef.designationCategory != category.designationCategory )
-                    {
-                        if ( category.debug )
-                            Logger.Warning(
-                                           "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.",
-                                           defName );
-                        continue;
-                    }
-
-                    // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
-                    var bdefDesignator =
-                        resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as
-                        Designator_Build;
-                    if ( category.debug && bdefDesignator == null )
-                        Log.Warning( "No designator found with matching entity def! Skipping." );
-
-                    // if not null, add designator to the subcategory, and remove from main category
-                    if ( bdefDesignator != null )
-                    {
-                        // find index, and update FirstDesignatorIndex
-                        int index = resolvedDesignators.IndexOf( bdefDesignator );
-                        if ( FirstDesignatorIndex < 0 || index < FirstDesignatorIndex )
-                            FirstDesignatorIndex = index;
-
-                        designators.Add( bdefDesignator );
-                        resolvedDesignators.Remove( bdefDesignator );
-
-                        if ( category.debug )
-                            Logger.Message( "ThingDef {0} passed checks and was added to subcategory.", defName );
-                    }
-                    // done with this designator
-                }
 
                 // check if any designators were added to subdesignator
                 if ( !designators.NullOrEmpty() )
@@ -183,7 +219,7 @@ namespace ArchitectSense
 
                     // insert to replace first designator removed
                     // Log.Message( string.Join( ", ", resolvedDesignators.Select( d => d.LabelCap ).ToArray() ) );
-                    resolvedDesignators.Insert( FirstDesignatorIndex, subCategory );
+                    resolvedDesignators.Insert( firstDesignatorIndex, subCategory );
 
                     if ( category.debug )
                         Logger.Message( "Subcategory {0} created.", subCategory.LabelCap );
