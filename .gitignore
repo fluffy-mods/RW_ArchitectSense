@@ -3,3 +3,5 @@
 ################################################################################
 
 /Source/ModConfig.json
+/.mailmap
+/Source/SteamConfig.vdf

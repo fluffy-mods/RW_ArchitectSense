@@ -4,8 +4,12 @@
   <author>Fluffy</author>
   <url>https://ludeon.com/forums/index.php?topic=16120.0</url>
   <targetVersion>0.16.1393</targetVersion>
-  <description>&lt;size=24&gt;Contributors&lt;/size&gt;
-FluffierThanThouKarel Kroeze    
+  <description>Allows modders to combine buildables in subcategories.
+
+&lt;size=24&gt;Important&lt;/size&gt;
+&lt;b&gt;This is not an end-user mod&lt;/b&gt; 
+This mod is intended to provide functionality to other modders, and does nothing without custom XML. 
+If you’re a modder, or want to try out subcategories, have a look at the Examples folder. 
 
 tag:Fluffylicious
 
