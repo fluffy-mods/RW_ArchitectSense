@@ -128,6 +128,16 @@ namespace ArchitectSense
             return res;
         }
 
+        public static void HideDesignator( Designator designator )
+        {
+            throw new NotImplementedException();
+        }
+
+        public static Designator_Build GetDesignator( BuildableDef def )
+        {
+            throw new NotImplementedException();
+        }
+
         public override void DefsLoaded()
         {
             Logger.Message( "Creating subcategories" );

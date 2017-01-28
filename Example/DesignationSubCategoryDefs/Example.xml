@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-    <ArchitectSense.DesignationSubCategoryDef>
+    <!-- <ArchitectSense.DesignationSubCategoryDef>
     	<defName>SubCategory_Chairs</defName>
     	<label>seats</label>
     	<description>Chairs, stools sofas and benches</description>
-    	<!-- graphicData is optional, if not set the icon for the first def listed below will be borrowed. -->
-    	<!-- <graphicData></graphicData> -->
+    	<!//-- graphicData is optional, if not set the icon for the first def listed below will be borrowed. --//>
+    	<!//-- <graphicData></graphicData> --//>
     	<defNames>
             <li>Stool</li>
             <li>DiningChair</li>
@@ -17,11 +17,11 @@
             <li>RoundChair</li>
     	</defNames>
     	<designationCategory>Furniture</designationCategory>
-    	<!-- Debug flag prints some extra information after map is loaded (while subcategories are being created) -->
+    	<!//-- Debug flag prints some extra information after map is loaded (while subcategories are being created) --//>
     	<debug>true</debug>
     </ArchitectSense.DesignationSubCategoryDef>
 
-    <!-- Floors -->
+    <!//-- Floors --//>
     <ArchitectSense.DesignationSubCategoryDef>
         <defName>SubCategory_VanillaFloorTest</defName>
         <label>StoneFloors</label>
@@ -34,8 +34,8 @@
             <li>TileMarble</li>
         </defNames>
         <designationCategory>Floors</designationCategory>
-        <!-- Setting preview to false creates a subcategory dropdown that is visually extremely similar to the stuff selection menu.
-        However, you should not that this does overrule the vanilla stuff selection, so only use it for items that have no stuff, e.g. floors. -->
+        <!//-- Setting preview to false creates a subcategory dropdown that is visually extremely similar to the stuff selection menu.
+        However, you should not that this does overrule the vanilla stuff selection, so only use it for items that have no stuff, e.g. floors. --//>
     	<preview>false</preview>
         <debug>true</debug>
     </ArchitectSense.DesignationSubCategoryDef>
@@ -160,6 +160,5 @@
         <designationCategory>Furniture</designationCategory>
         <debug>true</debug>
     </ArchitectSense.DesignationSubCategoryDef>
-
-
+ -->
 </Defs>
