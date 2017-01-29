@@ -128,7 +128,7 @@ namespace ArchitectSense
             return res;
         }
 
-        public static Dictionary<BuildableDef, Designator_Build> _designators = new Dictionary<BuildableDef, Designator_Build>();
+        private static Dictionary<BuildableDef, Designator_Build> _designators = new Dictionary<BuildableDef, Designator_Build>();
 
         public static void HideDesignator( BuildableDef def )
         {
