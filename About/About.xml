@@ -7,9 +7,14 @@
   <description>Allows modders to combine buildables in subcategories.
 
 &lt;size=24&gt;Important&lt;/size&gt;
-&lt;b&gt;This is not an end-user mod&lt;/b&gt; 
-This mod is intended to provide functionality to other modders, and does nothing without custom XML. 
+&lt;b&gt;This is a functionality mod, it does nothing on its own&lt;/b&gt; 
+This mod is intended to provide functionality to other modders, and does nothing without custom XML and/or C# code.
 If you’re a modder, or want to try out subcategories, have a look at the Examples folder. 
+
+&lt;size=24&gt;Features (for modders)&lt;/size&gt;
+Architect Sense allows you to group designators for buildings and terrains (e.g. the buttons in the architect menu) together.
+It is simple to configure with DesignationSubCategoryDefs in XML (see the Examples folder), and also exposes a number of methods
+to handle dynamically creating categories, as well as finding and hiding individual designators.  
 
 tag:Fluffylicious
 
