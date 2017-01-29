@@ -128,14 +128,95 @@ namespace ArchitectSense
             return res;
         }
 
-        public static void HideDesignator( Designator designator )
+        public static Dictionary<BuildableDef, Designator_Build> _designators = new Dictionary<BuildableDef, Designator_Build>();
+
+        public static void HideDesignator( Designator_Build des, DesignationCategoryDef cat = null )
         {
-            throw new NotImplementedException();
+            // get the entity def
+            // first check our field info
+            if ( Designator_SubCategoryItem.entDefFieldInfo == null )
+                throw new Exception( "Could not get Designator_Build.entDef FieldInfo." );
+            // get the def
+            BuildableDef def = Designator_SubCategoryItem.entDefFieldInfo.GetValue( des ) as BuildableDef;
+            // check for null
+            if ( def == null )
+                throw new Exception( $"Tried to hide designator with NULL entDef ({des.Label}). Such designators should not exist." );
+
+            // if category wasn't explicitly set, assume it is the same as the def's
+            if ( cat == null )
+                cat = def.designationCategory;
+            // if still null, there's nothing to hide.
+            if ( cat == null )
+                throw new Exception( $"Tried to hide designator from NULL category. That makes little sense." );
+
+            // make sure the designator is cached so we can still get it later
+            if (!_designators.ContainsKey( def ))
+                _designators.Add( def, des );
+
+            // get the categories designators
+            var resolved = GetResolvedDesignators( cat );
+
+            // remove our designator if it was in there, throw a warning if it was not
+            if ( resolved.Contains( des ) )
+                resolved.Remove( des );
+            else 
+                Log.Warning( $"Tried to remove designator {des.Label} from category {cat.label}, but it was not included in the categories' resolved designators."  );
         }
 
         public static Designator_Build GetDesignator( BuildableDef def )
         {
-            throw new NotImplementedException();
+            Designator_Build result;
+            
+            // try get from cache
+            if ( _designators.TryGetValue( def, out result ) )
+                return result;
+
+            // find the designator
+            DesignationCategoryDef dump;
+            result = FindDesignator( def, out dump );
+
+            // did we get anything? If not, create it.
+            if ( result == null )
+                result = new Designator_Build( def );
+
+            // cache it
+            _designators.Add( def, result );
+
+            return result;
+        }
+
+        private static Designator_Build FindDesignator( BuildableDef def, out DesignationCategoryDef cat_out )
+        {
+            // cycle through all categories to try and find our designator
+            foreach ( DesignationCategoryDef cat in DefDatabase<DesignationCategoryDef>.AllDefsListForReading )
+            {
+                // check vanilla designators
+                foreach ( Designator_Build des in GetResolvedDesignators( cat ).OfType<Designator_Build>() )
+                {
+                    if ( isForDef( des, def ) )
+                    {
+                        cat_out = cat;
+                        return des;
+                    }
+                }
+
+                // check our designation subcategories
+                foreach (
+                    Designator_SubCategory subcat in GetResolvedDesignators( cat ).OfType<Designator_SubCategory>() )
+                {
+                    foreach ( Designator_SubCategoryItem subdes in subcat.SubDesignators )
+                    {
+                        if ( isForDef( subdes, def ) )
+                        {
+                            cat_out = cat;
+                            return subdes;
+                        }
+                    }
+                }
+            }
+
+            cat_out = null;
+            return null;
         }
 
         public override void DefsLoaded()
@@ -171,7 +252,7 @@ namespace ArchitectSense
                 // get list of current designators in the category
                 List<Designator> resolvedDesignators = GetResolvedDesignators( category.designationCategory );
 
-                // start adding designators to it
+                // start adding designators to the subcategory
                 if ( category.defNames != null )
                     foreach ( string defName in category.defNames )
                     {
@@ -186,34 +267,26 @@ namespace ArchitectSense
                                 Logger.Warning( "ThingDef {0} not found! Skipping.", defName );
                             continue;
                         }
-
-                        // main designation categories match
-                        if ( bdef.designationCategory != category.designationCategory )
-                        {
-                            if ( category.debug )
-                                Logger.Warning(
-                                               "ThingDef {0} main designationCategory doesn't match subcategory's designationCategory! Skipping.",
-                                               defName );
-                            continue;
-                        }
-
-                        // fetch the designator from the main category, by checking if the designators entitiyDef (entDef, protected) is the same as our current def.
-                        var bdefDesignator =
-                            resolvedDesignators.FirstOrDefault( des => isForDef( des as Designator_Build, bdef ) ) as
-                            Designator_Build;
+                        
+                        // find the designator for this buildabledef
+                        DesignationCategoryDef designatorCategory;
+                        var bdefDesignator = FindDesignator( bdef, out designatorCategory );
                         if ( category.debug && bdefDesignator == null )
                             Log.Warning( "No designator found with matching entity def! Skipping." );
 
                         // if not null, add designator to the subcategory, and remove from main category
                         if ( bdefDesignator != null )
                         {
-                            // find index, and update FirstDesignatorIndex
-                            int index = resolvedDesignators.IndexOf( bdefDesignator );
-                            if ( firstDesignatorIndex < 0 || index < firstDesignatorIndex )
-                                firstDesignatorIndex = index;
+                            // if taken designator was in the same category as the new subcategory, find index and update FirstDesignatorIndex
+                            if ( designatorCategory == category.designationCategory )
+                            {
+                                int index = resolvedDesignators.IndexOf( bdefDesignator );
+                                if ( firstDesignatorIndex < 0 || index < firstDesignatorIndex )
+                                    firstDesignatorIndex = index;
+                            }
 
                             designators.Add( bdefDesignator );
-                            resolvedDesignators.Remove( bdefDesignator );
+                            HideDesignator( bdefDesignator );
 
                             if ( category.debug )
                                 Logger.Message( "ThingDef {0} passed checks and was added to subcategory.", defName );
@@ -227,9 +300,11 @@ namespace ArchitectSense
                     // create subcategory
                     var subCategory = new Designator_SubCategory( category, designators );
 
-                    // insert to replace first designator removed
-                    // Log.Message( string.Join( ", ", resolvedDesignators.Select( d => d.LabelCap ).ToArray() ) );
-                    resolvedDesignators.Insert( firstDesignatorIndex, subCategory );
+                    // insert to replace first designator removed, or just add at the end if taken from different categories
+                    if (firstDesignatorIndex >= 0)
+                        resolvedDesignators.Insert( firstDesignatorIndex, subCategory );
+                    else
+                        resolvedDesignators.Add( subCategory );
 
                     if ( category.debug )
                         Logger.Message( "Subcategory {0} created.", subCategory.LabelCap );
@@ -241,7 +316,7 @@ namespace ArchitectSense
             }
         }
 
-        private bool isForDef( Designator_Build des, BuildableDef def )
+        private static bool isForDef( Designator_Build des, BuildableDef def )
         {
             // we might get nulls from special designators being cast to des_build
             // in which case, reflection fails WITHOUT THROWING AN ERROR!
