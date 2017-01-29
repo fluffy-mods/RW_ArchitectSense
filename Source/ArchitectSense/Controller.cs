@@ -130,6 +130,13 @@ namespace ArchitectSense
 
         public static Dictionary<BuildableDef, Designator_Build> _designators = new Dictionary<BuildableDef, Designator_Build>();
 
+        public static void HideDesignator( BuildableDef def )
+        {
+            DesignationCategoryDef cat;
+            var des = FindDesignator( def, out cat );
+            HideDesignator( des, cat );
+        }
+
         public static void HideDesignator( Designator_Build des, DesignationCategoryDef cat = null )
         {
             // get the entity def
