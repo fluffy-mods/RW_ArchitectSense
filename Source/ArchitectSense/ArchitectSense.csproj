@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="DesignationSubCategoryDef.cs" />
     <Compile Include="Controller.cs" />
+    <Compile Include="DesignatorUtility.cs" />
     <Compile Include="Designator_SubCategory.cs" />
     <Compile Include="Designator_SubCategoryItem.cs" />
     <Compile Include="FloatMenu_Subcategory.cs" />
