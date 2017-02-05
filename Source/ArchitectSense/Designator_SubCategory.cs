@@ -129,7 +129,7 @@ namespace ArchitectSense
 
         public override void DrawPanelReadout(ref float curY, float width)
         {
-            if (SelectedItem != null)
+            if (SelectedItem != null && def.emulateStuff)
                 SelectedItem.DrawPanelReadout(ref curY, width);
             else
                 base.DrawPanelReadout(ref curY, width);

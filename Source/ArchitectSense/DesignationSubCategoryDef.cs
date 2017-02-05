@@ -17,6 +17,6 @@ namespace ArchitectSense
         public GraphicData graphicData = null;
         public int order = 0;
         public bool preview = true;
-        public bool hideNotBuildable = false;
+        public bool emulateStuff = false;
     }
 }

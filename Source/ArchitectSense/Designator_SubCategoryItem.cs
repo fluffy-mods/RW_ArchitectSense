@@ -17,7 +17,7 @@ namespace ArchitectSense
                                                                                        BindingFlags.NonPublic |
                                                                                        BindingFlags.Instance);
 
-        public BuildableDef entDef => entDefFieldInfo.GetValue(this) as BuildableDef;
+        public new BuildableDef entDef => entDefFieldInfo.GetValue(this) as BuildableDef;
 
         private Designator_SubCategory subCategory;
 
@@ -42,7 +42,7 @@ namespace ArchitectSense
                     return true;
 
                 var visible = base.Visible;
-                if (visible && subCategory.def.hideNotBuildable)
+                if (visible && subCategory.def.emulateStuff)
                 {
                     // note that at this point we don't care about what stuff this can be build from, so check only the 'static' costlist.
                     foreach (ThingCountClass tc in entDef.costList)
