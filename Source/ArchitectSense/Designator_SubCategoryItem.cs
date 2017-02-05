@@ -13,103 +13,124 @@ namespace ArchitectSense
     public class Designator_SubCategoryItem : Designator_Build
     {
         // provide access to Designator_Build.entDef
-        public static FieldInfo entDefFieldInfo = typeof( Designator_Build ).GetField( "entDef",
+        public static FieldInfo entDefFieldInfo = typeof(Designator_Build).GetField("entDef",
                                                                                        BindingFlags.NonPublic |
-                                                                                       BindingFlags.Instance );
+                                                                                       BindingFlags.Instance);
+
+        public BuildableDef entDef => entDefFieldInfo.GetValue(this) as BuildableDef;
 
         private Designator_SubCategory subCategory;
 
         // default constructor from ThingDef, forwarded to base.
-        public Designator_SubCategoryItem( ThingDef entDef, Designator_SubCategory subCategory ) : base( entDef )
+        public Designator_SubCategoryItem(ThingDef entDef, Designator_SubCategory subCategory) : base(entDef)
         {
             this.subCategory = subCategory;
         }
 
         // constructor from Designator_Build, links to constructor from ThingDef.
-        public Designator_SubCategoryItem( Designator_Build designator, Designator_SubCategory subCategory )
-            : base( entDefFieldInfo.GetValue( designator ) as BuildableDef )
+        public Designator_SubCategoryItem(Designator_Build designator, Designator_SubCategory subCategory)
+            : base(entDefFieldInfo.GetValue(designator) as BuildableDef)
         {
             this.subCategory = subCategory;
         }
 
-        public override GizmoResult GizmoOnGUI( Vector2 topLeft )
+        public override bool Visible
+        {
+            get
+            {
+                if (subCategory.def.hideNotBuildable)
+                {
+                    // note that at this point we don't care about what stuff this can be build from, so check only the 'static' costlist.
+                    foreach (ThingCountClass tc in entDef.costList)
+                        if (Map.listerThings.ThingsOfDef(tc.thingDef).Count == 0)
+                            return false;
+
+                    // all things were available
+                    return true;
+                }
+                else
+                    return base.Visible;
+            }
+        }
+
+        public override GizmoResult GizmoOnGUI(Vector2 topLeft)
         {
             // start GUI.color is the transparency set by our floatmenu parent
             // store it, so we can apply it to all subsequent colours
             Color transparency = GUI.color;
 
             // below is 99% copypasta from Designator_Build, with minor naming changes and taking account of transparency.
-            var buttonRect = new Rect( topLeft.x, topLeft.y, Width, 75f );
+            var buttonRect = new Rect(topLeft.x, topLeft.y, Width, 75f);
             var mouseover = false;
-            if ( Mouse.IsOver( buttonRect ) )
+            if (Mouse.IsOver(buttonRect))
             {
                 mouseover = true;
                 GUI.color = GenUI.MouseoverColor * transparency;
             }
             Texture2D tex = icon;
-            if ( tex == null )
+            if (tex == null)
                 tex = BaseContent.BadTex;
-            GUI.DrawTexture( buttonRect, BGTex );
-            MouseoverSounds.DoRegion( buttonRect, SoundDefOf.MouseoverCommand );
+            GUI.DrawTexture(buttonRect, BGTex);
+            MouseoverSounds.DoRegion(buttonRect, SoundDefOf.MouseoverCommand);
             GUI.color = IconDrawColor * transparency;
-            Widgets.DrawTextureFitted( new Rect( buttonRect ), tex, iconDrawScale * 0.85f, iconProportions,
-                                       iconTexCoords );
+            Widgets.DrawTextureFitted(new Rect(buttonRect), tex, iconDrawScale * 0.85f, iconProportions,
+                                       iconTexCoords);
             GUI.color = Color.white * transparency;
             var clicked = false;
             KeyCode keyCode = hotKey != null ? hotKey.MainKey : KeyCode.None;
-            if ( keyCode != KeyCode.None && !GizmoGridDrawer.drawnHotKeys.Contains( keyCode ) )
+            if (keyCode != KeyCode.None && !GizmoGridDrawer.drawnHotKeys.Contains(keyCode))
             {
-                Widgets.Label( new Rect( buttonRect.x + 5f, buttonRect.y + 5f, 16f, 18f ), keyCode.ToString() );
-                GizmoGridDrawer.drawnHotKeys.Add( keyCode );
-                if ( hotKey.KeyDownEvent )
+                Widgets.Label(new Rect(buttonRect.x + 5f, buttonRect.y + 5f, 16f, 18f), keyCode.ToString());
+                GizmoGridDrawer.drawnHotKeys.Add(keyCode);
+                if (hotKey.KeyDownEvent)
                 {
                     clicked = true;
                     Event.current.Use();
                 }
             }
-            if ( Widgets.ButtonInvisible( buttonRect ) )
+            if (Widgets.ButtonInvisible(buttonRect))
                 clicked = true;
             string labelCap = LabelCap;
-            if ( !labelCap.NullOrEmpty() )
+            if (!labelCap.NullOrEmpty())
             {
-                float height = Text.CalcHeight( labelCap, buttonRect.width ) - 2f;
-                var rect2 = new Rect( buttonRect.x, (float) ( buttonRect.yMax - (double) height + 12.0 ),
-                                      buttonRect.width, height );
-                GUI.DrawTexture( rect2, TexUI.GrayTextBG );
+                float height = Text.CalcHeight(labelCap, buttonRect.width) - 2f;
+                var rect2 = new Rect(buttonRect.x, (float)(buttonRect.yMax - (double)height + 12.0),
+                                      buttonRect.width, height);
+                GUI.DrawTexture(rect2, TexUI.GrayTextBG);
                 GUI.color = Color.white * transparency;
                 Text.Anchor = TextAnchor.UpperCenter;
-                Widgets.Label( rect2, labelCap );
+                Widgets.Label(rect2, labelCap);
                 Text.Anchor = TextAnchor.UpperLeft;
             }
             GUI.color = Color.white;
-            if ( DoTooltip )
+            if (DoTooltip)
             {
                 TipSignal tip = Desc;
-                if ( disabled && !disabledReason.NullOrEmpty() )
+                if (disabled && !disabledReason.NullOrEmpty())
                 {
                     TipSignal local = tip;
                     local.text += "\n\nDISABLED: " + disabledReason;
                 }
-                TooltipHandler.TipRegion( buttonRect, tip );
+                TooltipHandler.TipRegion(buttonRect, tip);
             }
             // TODO: Reimplement tutor.
             //if( !tutorHighlightTag.NullOrEmpty() )
             //    TutorUIHighlighter.HighlightOpportunity( tutorHighlightTag, buttonRect );
 
-            if ( clicked )
+            if (clicked)
             {
-                if ( !disabled )
-                    return new GizmoResult( GizmoState.Interacted, Event.current );
+                if (!disabled)
+                    return new GizmoResult(GizmoState.Interacted, Event.current);
 
-                if ( !disabledReason.NullOrEmpty() )
-                    Messages.Message( disabledReason, MessageSound.RejectInput );
-                return new GizmoResult( GizmoState.Mouseover, null );
+                if (!disabledReason.NullOrEmpty())
+                    Messages.Message(disabledReason, MessageSound.RejectInput);
+                return new GizmoResult(GizmoState.Mouseover, null);
             }
 
-            if ( mouseover )
-                return new GizmoResult( GizmoState.Mouseover, null );
+            if (mouseover)
+                return new GizmoResult(GizmoState.Mouseover, null);
 
-            return new GizmoResult( GizmoState.Clear, null );
+            return new GizmoResult(GizmoState.Clear, null);
         }
 
         public override void Selected()
