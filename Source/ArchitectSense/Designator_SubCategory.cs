@@ -127,6 +127,14 @@ namespace ArchitectSense
 
         public override AcceptanceReport CanDesignateCell(IntVec3 loc) { return false; }
 
+        public override void DrawPanelReadout(ref float curY, float width)
+        {
+            if (SelectedItem != null)
+                SelectedItem.DrawPanelReadout(ref curY, width);
+            else
+                base.DrawPanelReadout(ref curY, width);
+        }
+
         public override GizmoResult GizmoOnGUI(Vector2 topLeft)
         {
             GizmoResult val = base.GizmoOnGUI(topLeft);

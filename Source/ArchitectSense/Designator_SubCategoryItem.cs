@@ -38,18 +38,22 @@ namespace ArchitectSense
         {
             get
             {
-                if (subCategory.def.hideNotBuildable)
+                if (DebugSettings.godMode)
+                    return true;
+
+                var visible = base.Visible;
+                if (visible && subCategory.def.hideNotBuildable)
                 {
                     // note that at this point we don't care about what stuff this can be build from, so check only the 'static' costlist.
                     foreach (ThingCountClass tc in entDef.costList)
-                        if (Map.listerThings.ThingsOfDef(tc.thingDef).Count == 0)
-                            return false;
-
-                    // all things were available
-                    return true;
+                    {
+                        visible = Map.listerThings.ThingsOfDef(tc.thingDef).Count > 0;
+                        if (!visible)
+                            break;
+                    }
                 }
-                else
-                    return base.Visible;
+
+                return visible;
             }
         }
 
