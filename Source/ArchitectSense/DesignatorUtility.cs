@@ -1,9 +1,14 @@
-﻿using System;
+﻿#if DEBUG
+//#define DEBUG_HIDE_DEFS
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using RimWorld;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using Verse;
 
 namespace ArchitectSense
@@ -11,18 +16,14 @@ namespace ArchitectSense
     public static class DesignatorUtility
     {
         private static Dictionary<BuildableDef, Designator_Build> _designators = new Dictionary<BuildableDef, Designator_Build>();
-        private static FieldInfo _resolvedDesignatorsFieldInfo =
-            typeof(DesignationCategoryDef).GetField("resolvedDesignators", BindingFlags.NonPublic | BindingFlags.Instance);
-        // private static FieldInfo _desPanelCacheFieldinfo = 
-        //     typeof( MainTabWindow_Architect ).GetField( "desPanelsCached", BindingFlags.NonPublic | BindingFlags.Instance );
 
         public static void MergeDesignationCategories(DesignationCategoryDef target, DesignationCategoryDef source)
         {
             Log.Warning($"ArchitectSense :: Merging {source.defName} with {target.defName}...");
 
             // get both lists of resolved designators 
-            var sourceDesignators = GetResolvedDesignators(source);
-            var targetDesignators = GetResolvedDesignators(target);
+            var sourceDesignators = source.AllResolvedDesignators;
+            var targetDesignators = target.AllResolvedDesignators;
 
             // merge designators that did not yet exist into the target category
             foreach (Designator sourceDesignator in sourceDesignators)
@@ -57,13 +58,16 @@ namespace ArchitectSense
             // the subtle solution didn't seem to work, so let's get nuclear
             (DefDatabase<DesignationCategoryDef>.AllDefs as List<DesignationCategoryDef>)?.Remove(source);
             typeof(MainTabWindow_Architect).GetMethod("CacheDesPanels", (BindingFlags)60)
-                                             .Invoke(MainTabDefOf.Architect.Window, null);
+                                             .Invoke(MainButtonDefOf.Architect.TabWindow, null);
         }
 
         public static void HideDesignator(Designator_Build des, DesignationCategoryDef cat = null)
         {
+            if ( des == null )
+                throw new ArgumentNullException( nameof( des ) );
+
             // get the entity def
-            BuildableDef def = Designator_SubCategoryItem.entDefFieldInfo.GetValue(des) as BuildableDef;
+            BuildableDef def = des.PlacingDef;
             // check for null
             if (def == null)
                 throw new Exception($"Tried to hide designator with NULL entDef ({des.Label}). Such designators should not exist.");
@@ -80,7 +84,7 @@ namespace ArchitectSense
                 _designators.Add(def, des);
 
             // get the categories designators
-            var resolved = GetResolvedDesignators(cat);
+            var resolved = cat.AllResolvedDesignators;
 
             // remove our designator if it was in there, throw a warning if it was not
             if (resolved.Contains(des))
@@ -96,8 +100,7 @@ namespace ArchitectSense
             if (des == null)
                 return false;
 
-            return (Designator_SubCategoryItem.entDefFieldInfo.GetValue(des) as BuildableDef)?.defName ==
-                   def.defName;
+            return des.PlacingDef.defName == def.defName;
         }
 
 
@@ -123,7 +126,7 @@ namespace ArchitectSense
         /// Creates a subcategory based on subcategoryDef in categoryDef at position, containing elements thingDefs.
         /// Position defaults to adding on the right. 
         /// 
-        /// Note that if designators for the terrains in thingDefs already exist, they will NOT be removed - this method
+        /// Note that if designators for the things in thingDefs already exist, they will NOT be removed - this method
         /// creates NEW designators, and is primarily meant for mods that programatically generate defs.
         /// </summary>
         /// <param name="categoryDef"></param>
@@ -141,7 +144,7 @@ namespace ArchitectSense
         /// Creates a subcategory based on subcategoryDef in categoryDef at position, containing elements buildableDefs.
         /// Position defaults to adding on the right. 
         /// 
-        /// Note that if designators for the terrains in buildableDefs already exist, they will NOT be removed - this method
+        /// Note that if designators for the buildables in buildableDefs already exist, they will NOT be removed - this method
         /// creates NEW designators, and is primarily meant for mods that programatically generate defs.
         /// </summary>
         /// <param name="categoryDef"></param>
@@ -156,7 +159,7 @@ namespace ArchitectSense
                 throw new ArgumentNullException(nameof(categoryDef));
 
             // get designation category's resolved designators
-            List<Designator> resolvedDesignators = GetResolvedDesignators(categoryDef);
+            List<Designator> resolvedDesignators = categoryDef.AllResolvedDesignators;
 
             // check position argument
             if (position > resolvedDesignators.Count)
@@ -173,21 +176,7 @@ namespace ArchitectSense
             else
                 resolvedDesignators.Insert(position, subcategory);
         }
-
-        public static List<Designator> GetResolvedDesignators(DesignationCategoryDef category)
-        {
-            if (_resolvedDesignatorsFieldInfo == null)
-                throw new Exception("resolvedDesignatorsFieldInfo not found!");
-            if (category == null)
-                throw new ArgumentNullException(nameof(category));
-
-            var res = _resolvedDesignatorsFieldInfo.GetValue(category) as List<Designator>;
-            if (res == null)
-                throw new Exception("Resolved designators for " + category.defName + " is NULL!");
-
-            return res;
-        }
-
+        
         public static Designator_Build GetDesignator(BuildableDef def)
         {
             Designator_Build result;
@@ -219,12 +208,21 @@ namespace ArchitectSense
 
         internal static Designator_Build FindDesignator(BuildableDef def, out DesignationCategoryDef cat_out)
         {
+#if DEBUG_HIDE_DEFS
+            Controller.Logger.Message($"Trying to find {def.defName}");
+#endif
             // cycle through all categories to try and find our designator
             foreach (DesignationCategoryDef cat in DefDatabase<DesignationCategoryDef>.AllDefsListForReading)
             {
+#if DEBUG_HIDE_DEFS
+                Controller.Logger.Message($"Checking {cat.defName}, {cat.AllResolvedDesignators.Count} designators found.");
+#endif
                 // check vanilla designators
-                foreach (Designator_Build des in GetResolvedDesignators(cat).OfType<Designator_Build>())
+                foreach (Designator_Build des in cat.AllResolvedDesignators.OfType<Designator_Build>())
                 {
+#if DEBUG_HIDE_DEFS
+                    Controller.Logger.Message($"Checking {des.Label}, for {des.PlacingDef.defName}");
+#endif
                     if (isForDef(des, def))
                     {
                         cat_out = cat;
@@ -234,7 +232,7 @@ namespace ArchitectSense
 
                 // check our designation subcategories
                 foreach (
-                    Designator_SubCategory subcat in GetResolvedDesignators(cat).OfType<Designator_SubCategory>())
+                    Designator_SubCategory subcat in cat.AllResolvedDesignators.OfType<Designator_SubCategory>())
                 {
                     foreach (Designator_SubCategoryItem subdes in subcat.SubDesignators)
                     {

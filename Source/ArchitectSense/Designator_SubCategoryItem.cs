@@ -12,13 +12,6 @@ namespace ArchitectSense
 {
     public class Designator_SubCategoryItem : Designator_Build
     {
-        // provide access to Designator_Build.entDef
-        public static FieldInfo entDefFieldInfo = typeof(Designator_Build).GetField("entDef",
-                                                                                       BindingFlags.NonPublic |
-                                                                                       BindingFlags.Instance);
-
-        public new BuildableDef entDef => entDefFieldInfo.GetValue(this) as BuildableDef;
-
         private Designator_SubCategory subCategory;
 
         // default constructor from ThingDef, forwarded to base.
@@ -28,8 +21,8 @@ namespace ArchitectSense
         }
 
         // constructor from Designator_Build, links to constructor from ThingDef.
-        public Designator_SubCategoryItem(Designator_Build designator, Designator_SubCategory subCategory)
-            : base(entDefFieldInfo.GetValue(designator) as BuildableDef)
+        public Designator_SubCategoryItem( Designator_Build designator, Designator_SubCategory subCategory )
+            : base( designator.PlacingDef )
         {
             this.subCategory = subCategory;
         }

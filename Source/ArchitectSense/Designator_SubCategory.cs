@@ -2,6 +2,10 @@
 // Designator_SubCategory.cs
 // 2016-12-21
 
+#if DEBUG
+#define DEBUG_ICON
+#endif 
+
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -15,8 +19,7 @@ namespace ArchitectSense
     {
         public static Vector2 SubCategoryIndicatorSize = new Vector2(16f, 16f);
 
-        public static Texture2D SubCategoryIndicatorTexture =
-            ContentFinder<Texture2D>.Get("UI/Icons/SubcategoryIndicator");
+        public static Texture2D SubCategoryIndicatorTexture = ContentFinder<Texture2D>.Get("UI/Icons/SubcategoryIndicator");
 
         private static readonly Vector2 TerrainTextureCroppedSize = new Vector2(64f, 64f);
 
@@ -32,7 +35,7 @@ namespace ArchitectSense
             SubDesignators = designators.Select(d => new Designator_SubCategoryItem(d, this)).ToList();
             defaultLabel = categoryDef.label;
             defaultDesc = categoryDef.description;
-            SetDefaultIcon();
+            SetIcon();
         }
 
         public Designator_SubCategoryItem SelectedItem
@@ -47,7 +50,7 @@ namespace ArchitectSense
             set
             {
                 _selected = value;
-                SetDefaultIcon();
+                SetIcon();
             }
         }
 
@@ -83,10 +86,13 @@ namespace ArchitectSense
             get { return ValidSubDesignators.Count > 0; }
         }
 
-        private void SetDefaultIcon()
+        private void SetIcon()
         {
             if (def.graphicData != null)
             {
+#if DEBUG_ICON
+                Controller.Logger.Message( "using subcatdef icon" );
+#endif
                 // use graphic in subcategory def
                 icon = def.graphicData.Graphic.MatSingle.mainTexture as Texture2D;
                 iconProportions = def.graphicData.drawSize;
@@ -98,14 +104,17 @@ namespace ArchitectSense
         private void SetDesignatorIcon()
         {
             // use graphic in first designator
-            if (SelectedItem.entDef == null && def.debug)
+            if (SelectedItem.PlacingDef == null && def.debug)
             {
-                Controller.GetLogger.Warning("Failed to get def for icon automatically.");
+                Controller.Logger.Warning("Failed to get def for icon automatically.");
             }
             else
             {
-                icon = SelectedItem.entDef.uiIcon;
-                var thingDef = SelectedItem.entDef as ThingDef;
+#if DEBUG_ICON
+                Controller.Logger.Message($"using {SelectedItem.PlacingDef.defName} uiIcon");
+#endif
+                icon = SelectedItem.PlacingDef.uiIcon;
+                var thingDef = SelectedItem.PlacingDef as ThingDef;
                 if (thingDef != null)
                 {
                     iconProportions = thingDef.graphicData.drawSize;
@@ -116,12 +125,10 @@ namespace ArchitectSense
                     iconProportions = new Vector2(1f, 1f);
                     iconDrawScale = 1f;
                 }
-                if (SelectedItem.entDef is TerrainDef)
+                if (SelectedItem.PlacingDef is TerrainDef)
                     iconTexCoords = new Rect(0.0f, 0.0f,
-                                              TerrainTextureCroppedSize.x /
-                                              icon.width,
-                                              TerrainTextureCroppedSize.y /
-                                              icon.height);
+                                              TerrainTextureCroppedSize.x / icon.width,
+                                              TerrainTextureCroppedSize.y / icon.height );
             }
         }
 

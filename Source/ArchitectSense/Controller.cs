@@ -3,8 +3,6 @@
 // 2016-12-21
 
 using System.Collections.Generic;
-using HugsLib;
-using HugsLib.Utils;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -12,8 +10,17 @@ using static ArchitectSense.DesignatorUtility;
 
 namespace ArchitectSense
 {
-    public class Controller : ModBase
+
+    public class Controller : Mod
     {
+        [StaticConstructorOnStartup]
+        public static class Init
+        {
+            static Init()
+            {
+                _instance.Initialize();
+            }
+        }
         #region Fields
 
         private static Controller _instance;
@@ -22,41 +29,27 @@ namespace ArchitectSense
 
         #region Constructors
 
-        public Controller() { _instance = this; }
-
-        #endregion Constructors
-
-        #region Properties
-
-        public static Controller Get => _instance;
-        public static ModLogger GetLogger => _instance?.Logger;
-        public override string ModIdentifier => "ArchitectSense";
-
-        #endregion Properties
-
-        #region Methods
-
-        public override void DefsLoaded()
+        public Controller( ModContentPack content ) : base ( content )
         {
-            Logger.Message( "Creating subcategories" );
+            _instance = this;
+        }
 
-            if ( Designator_SubCategoryItem.entDefFieldInfo == null )
-            {
-                Logger.Error( "Fetching entDef field info failed! Stopping!" );
-                return;
-            }
+        public void Initialize()
+        {
 
-            foreach ( DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading
+            Logger.Message("Creating subcategories");
+            
+            foreach (DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading
                 )
             {
-                if ( category.debug )
-                    Logger.Message( "Creating subcategory {0} in category {1}", category.LabelCap,
-                                    category.designationCategory );
+                if (category.debug)
+                    Logger.Message("Creating subcategory {0} in category {1}", category.LabelCap,
+                                    category.designationCategory);
 
                 // cop out if main cat not found
-                if ( category.designationCategory == null )
+                if (category.designationCategory == null)
                 {
-                    Logger.Warning( "Category {0} not found! Skipping.", category.designationCategory );
+                    Logger.Warning("Category {0} not found! Skipping.", category.designationCategory);
                     continue;
                 }
 
@@ -67,72 +60,92 @@ namespace ArchitectSense
                 int firstDesignatorIndex = -1;
 
                 // get list of current designators in the category
-                List<Designator> resolvedDesignators = GetResolvedDesignators( category.designationCategory );
+                List<Designator> resolvedDesignators = category.designationCategory.AllResolvedDesignators;
 
                 // start adding designators to the subcategory
-                if ( category.defNames != null )
-                    foreach ( string defName in category.defNames )
+                if (category.defNames != null)
+                    foreach (string defName in category.defNames)
                     {
-                        BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail( defName ) ??
-                                            (BuildableDef) DefDatabase<TerrainDef>.GetNamedSilentFail( defName );
+                        BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail(defName) ??
+                                            (BuildableDef)DefDatabase<TerrainDef>.GetNamedSilentFail(defName);
 
                         // do some common error checking
                         // buildable def exists
-                        if ( bdef == null )
+                        if (bdef == null)
                         {
-                            if ( category.debug )
-                                Logger.Warning( "ThingDef {0} not found! Skipping.", defName );
+                            if (category.debug)
+                                Logger.Warning("ThingDef {0} not found! Skipping.", defName);
                             continue;
                         }
-                        
+
                         // find the designator for this buildabledef
                         DesignationCategoryDef designatorCategory;
-                        var bdefDesignator = FindDesignator( bdef, out designatorCategory );
-                        if ( category.debug && bdefDesignator == null )
-                            Log.Warning( "No designator found with matching entity def! Skipping." );
+                        var bdefDesignator = FindDesignator(bdef, out designatorCategory);
+                        if (category.debug && bdefDesignator == null)
+                            Log.Warning("No designator found with matching entity def! Skipping.");
 
                         // if not null, add designator to the subcategory, and remove from main category
-                        if ( bdefDesignator != null )
+                        if (bdefDesignator != null)
                         {
                             // if taken designator was in the same category as the new subcategory, find index and update FirstDesignatorIndex
-                            if ( designatorCategory == category.designationCategory )
+                            if (designatorCategory == category.designationCategory)
                             {
-                                int index = resolvedDesignators.IndexOf( bdefDesignator );
-                                if ( firstDesignatorIndex < 0 || index < firstDesignatorIndex )
+                                int index = resolvedDesignators.IndexOf(bdefDesignator);
+                                if (firstDesignatorIndex < 0 || index < firstDesignatorIndex)
                                     firstDesignatorIndex = index;
                             }
 
-                            designators.Add( bdefDesignator );
-                            HideDesignator( bdefDesignator );
+                            designators.Add(bdefDesignator);
+                            HideDesignator(bdefDesignator);
 
-                            if ( category.debug )
-                                Logger.Message( "ThingDef {0} passed checks and was added to subcategory.", defName );
+                            if (category.debug)
+                                Logger.Message("ThingDef {0} passed checks and was added to subcategory.", defName);
                         }
                         // done with this designator
                     }
 
                 // check if any designators were added to subdesignator
-                if ( !designators.NullOrEmpty() )
+                if (!designators.NullOrEmpty())
                 {
                     // create subcategory
-                    var subCategory = new Designator_SubCategory( category, designators );
+                    var subCategory = new Designator_SubCategory(category, designators);
 
                     // insert to replace first designator removed, or just add at the end if taken from different categories
                     if (firstDesignatorIndex >= 0)
-                        resolvedDesignators.Insert( firstDesignatorIndex, subCategory );
+                        resolvedDesignators.Insert(firstDesignatorIndex, subCategory);
                     else
-                        resolvedDesignators.Add( subCategory );
+                        resolvedDesignators.Add(subCategory);
 
-                    if ( category.debug )
-                        Logger.Message( "Subcategory {0} created.", subCategory.LabelCap );
+                    if (category.debug)
+                        Logger.Message("Subcategory {0} created.", subCategory.LabelCap);
                 }
-                else if ( category.debug )
+                else if (category.debug)
                 {
-                    Logger.Warning( "Subcategory {0} did not have any (resolved) contents! Skipping.", category.LabelCap );
+                    Logger.Warning("Subcategory {0} did not have any (resolved) contents! Skipping.", category.LabelCap);
                 }
             }
         }
 
-        #endregion Methods
+        #endregion Constructors
+
+        #region Properties
+
+        public static Controller Get => _instance;
+
+        private static Logger _logger;
+        public static Logger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = new Logger( "ArchitectSense" );
+                }
+                return _logger;
+            }
+        } 
+
+        #endregion Properties
+
     }
 }
