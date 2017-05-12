@@ -136,10 +136,8 @@ namespace ArchitectSense
 
         public override void DrawPanelReadout(ref float curY, float width)
         {
-            if (SelectedItem != null && def.emulateStuff)
+            if (SelectedItem != null)
                 SelectedItem.DrawPanelReadout(ref curY, width);
-            else
-                base.DrawPanelReadout(ref curY, width);
         }
 
         public override GizmoResult GizmoOnGUI(Vector2 topLeft)

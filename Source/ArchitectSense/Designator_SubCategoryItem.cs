@@ -2,6 +2,12 @@
 // Designator_SubCategoryItem.cs
 // 2016-12-21
 
+#if DEBUG
+#define DEBUG_COSTLIST
+#endif
+
+using System;
+using System.Linq;
 using System.Reflection;
 using RimWorld;
 using UnityEngine;
@@ -15,7 +21,7 @@ namespace ArchitectSense
         private Designator_SubCategory subCategory;
 
         // default constructor from ThingDef, forwarded to base.
-        public Designator_SubCategoryItem(ThingDef entDef, Designator_SubCategory subCategory) : base(entDef)
+        public Designator_SubCategoryItem( ThingDef entDef, Designator_SubCategory subCategory) : base(entDef)
         {
             this.subCategory = subCategory;
         }
@@ -130,10 +136,29 @@ namespace ArchitectSense
             return new GizmoResult(GizmoState.Clear, null);
         }
 
+        private FieldInfo stuffDefFieldInfo = typeof( Designator_Build ).GetField( "stuffDef",
+                                                                                   BindingFlags.Instance |
+                                                                                   BindingFlags.NonPublic );
+        public ThingDef StuffDef
+        {
+            get
+            {
+                if ( stuffDefFieldInfo == null )
+                    throw new NullReferenceException( "stuffDef field info NULL " );
+
+                return stuffDefFieldInfo.GetValue( this ) as ThingDef;
+            }
+        }
+
         public override void Selected()
         {
             base.Selected();
             subCategory.SelectedItem = this;
+
+#if DEBUG_COSTLIST
+            var costs = PlacingDef.CostListAdjusted( StuffDef ).Select(c => c.thingDef.defName + ": " + c.count).ToArray();
+            Log.Message( $"{Label}: \n" + String.Join( "\n", costs ) );
+#endif
         }
     }
 }

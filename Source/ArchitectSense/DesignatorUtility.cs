@@ -165,6 +165,10 @@ namespace ArchitectSense
             if (position > resolvedDesignators.Count)
                 throw new ArgumentOutOfRangeException(nameof(position));
 
+            // hide existing designators 
+            foreach ( BuildableDef def in buildableDefs )
+                HideDesignator( def );
+
             // create subcategory
             var subcategory = new Designator_SubCategory(subcategoryDef,
                                                           buildableDefs.Select(bd => new Designator_Build(bd))
@@ -203,7 +207,8 @@ namespace ArchitectSense
         {
             DesignationCategoryDef cat;
             var des = FindDesignator(def, out cat);
-            HideDesignator(des, cat);
+            if (cat != null && des != null)
+                HideDesignator(des, cat);
         }
 
         internal static Designator_Build FindDesignator(BuildableDef def, out DesignationCategoryDef cat_out)
