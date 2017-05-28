@@ -40,19 +40,28 @@ namespace ArchitectSense
                 if (DebugSettings.godMode)
                     return true;
 
-                var visible = base.Visible;
-                if (visible && subCategory.def.emulateStuff)
+                return PrerequisitesSatisfied && MaterialsAvailable;
+            }
+        }
+
+        public bool PrerequisitesSatisfied => base.Visible;
+
+        public bool MaterialsAvailable
+        {
+            get
+            {
+                if (DebugSettings.godMode)
+                    return true;
+
+                if (subCategory.def.emulateStuff)
                 {
-                    // note that at this point we don't care about what stuff this can be build from, so check only the 'static' costlist.
+                    // note that for emulating stuff, we're assuming the item doesn't _actually_ have a stuff.
                     foreach (ThingCountClass tc in entDef.costList)
-                    {
-                        visible = Map.listerThings.ThingsOfDef(tc.thingDef).Count > 0;
-                        if (!visible)
-                            break;
-                    }
+                        if ( Map.listerThings.ThingsOfDef( tc.thingDef ).Count < tc.count )
+                            return false;
                 }
 
-                return visible;
+                return true;
             }
         }
 

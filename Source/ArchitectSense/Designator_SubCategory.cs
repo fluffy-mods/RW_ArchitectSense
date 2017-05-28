@@ -58,6 +58,9 @@ namespace ArchitectSense
         {
             get
             {
+                if ( !SubDesignators.Any( d => d.MaterialsAvailable ) )
+                    return Color.grey;
+
                 if (def.graphicData != null)
                     return def.graphicData.color;
 
@@ -81,10 +84,7 @@ namespace ArchitectSense
             }
         }
 
-        public override bool Visible
-        {
-            get { return ValidSubDesignators.Count > 0; }
-        }
+        public override bool Visible => SubDesignators.Any( d => d.PrerequisitesSatisfied );
 
         private void SetIcon()
         {
@@ -143,7 +143,7 @@ namespace ArchitectSense
         public override GizmoResult GizmoOnGUI(Vector2 topLeft)
         {
             GizmoResult val = base.GizmoOnGUI(topLeft);
-            if (ValidSubDesignators.Count == 1)
+            if ( ValidSubDesignators.Count <= 1 )
                 return val;
 
             var subCategoryIndicatorRect = new Rect(topLeft.x + Width - 20f, topLeft.y + 4f, SubCategoryIndicatorSize.x,
@@ -156,8 +156,15 @@ namespace ArchitectSense
 
         public override void ProcessInput(Event ev)
         {
+            // if no valid options, print error
+            if ( ValidSubDesignators.Count == 0 )
+            {
+                Messages.Message("NoStuffsToBuildWith".Translate(), MessageSound.RejectInput);
+                return;
+            }
+
             // if only one option, immediately skip to that option's processinput, and stop further processing - for all intents and purposes it will act like a normal designator.
-            if (ValidSubDesignators.Count() == 1)
+            if ( ValidSubDesignators.Count() == 1 )
             {
                 ValidSubDesignators.First().ProcessInput(ev);
                 return;
