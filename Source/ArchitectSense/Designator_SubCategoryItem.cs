@@ -56,8 +56,8 @@ namespace ArchitectSense
                 if (subCategory.def.emulateStuff)
                 {
                     // note that for emulating stuff, we're assuming the item doesn't _actually_ have a stuff.
-                    foreach (ThingCountClass tc in entDef.costList)
-                        if ( Map.listerThings.ThingsOfDef( tc.thingDef ).Count < tc.count )
+                    foreach ( ThingCountClass tc in entDef.costList )
+                        if (Map.listerThings.ThingsOfDef(tc.thingDef).Count == 0)
                             return false;
                 }
 
@@ -165,7 +165,8 @@ namespace ArchitectSense
             subCategory.SelectedItem = this;
 
 #if DEBUG_COSTLIST
-            var costs = PlacingDef.CostListAdjusted( StuffDef ).Select(c => c.thingDef.defName + ": " + c.count).ToArray();
+            // var costs = PlacingDef.CostListAdjusted(StuffDef).Select(c => c.thingDef.defName + ": " + c.count).ToArray();
+            var costs = entDef.costList.Select(c => c.thingDef.defName + ": " + c.count).ToArray();
             Log.Message( $"{Label}: \n" + String.Join( "\n", costs ) );
 #endif
         }
