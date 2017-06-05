@@ -10,3 +10,5 @@ Architect Sense allows you to group designators for buildings and terrains (e.g.
 It is simple to configure with DesignationSubCategoryDefs in XML (see the Examples folder), and also exposes a number of methods
 to handle dynamically creating categories, as well as finding and hiding individual designators.  
 
+# Issues
+Due to the extremely heavy-handed approach Erdelfs' MinePlan Designator uses to inject his designators, **MinePlan Designator is incompatible with Architect Sense**.
