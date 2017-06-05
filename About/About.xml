@@ -3,7 +3,7 @@
   <name>Architect Sense</name>
   <author>Fluffy</author>
   <url>https://ludeon.com/forums/index.php?topic=16120.0</url>
-  <targetVersion>0.17.1546</targetVersion>
+  <targetVersion>0.17.1557</targetVersion>
   <description>Allows modders to combine buildables in subcategories.
 
 &lt;size=24&gt;Important&lt;/size&gt;
@@ -15,6 +15,9 @@ If you’re a modder, or want to try out subcategories, have a look at the Examp
 Architect Sense allows you to group designators for buildings and terrains (e.g. the buttons in the architect menu) together.
 It is simple to configure with DesignationSubCategoryDefs in XML (see the Examples folder), and also exposes a number of methods
 to handle dynamically creating categories, as well as finding and hiding individual designators.  
+
+&lt;size=24&gt;Issues&lt;/size&gt;
+Due to the extremely heavy-handed approach Erdelfs’ MinePlan Designator uses to inject his designators, &lt;b&gt;MinePlan Designator is incompatible with Architect Sense&lt;/b&gt;.
 
 </description>
 </ModMetaData>

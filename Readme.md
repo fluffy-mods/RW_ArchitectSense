@@ -12,7 +12,8 @@ Architect Sense allows you to group designators for buildings and terrains (e.g.
 It is simple to configure with DesignationSubCategoryDefs in XML (see the Examples folder), and also exposes a number of methods
 to handle dynamically creating categories, as well as finding and hiding individual designators.  
 
-
+# Issues
+Due to the extremely heavy-handed approach Erdelfs' MinePlan Designator uses to inject his designators, **MinePlan Designator is incompatible with Architect Sense**.
 
 # Think you found a bug? 
 Please read [this guide](http://steamcommunity.com/sharedfiles/filedetails/?id=725234314) before creating a bug report,
@@ -28,4 +29,4 @@ All original content (e.g. text, imagery, sounds) in this mod is licensed under 
 Parts of the code in this mod, and some content may be licensed by their original authors. If this is the case, the original author & license will either be given in the source code, or be in a LICENSE file next to the content. Please do not decompile my mods, but use the original source code available on [GitHub](https://github.com/FluffierThanThou/RW_ArchitectSense/), so license information in the source code is preserved.
 
 # Version
-This is version v0.17.1.2
+This is version v0.17.1.3
