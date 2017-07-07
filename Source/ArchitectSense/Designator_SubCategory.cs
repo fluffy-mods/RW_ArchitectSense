@@ -111,7 +111,7 @@ namespace ArchitectSense
             else
             {
 #if DEBUG_ICON
-                Controller.Logger.Message($"using {SelectedItem.PlacingDef.defName} uiIcon");
+                Controller.Logger.Message(string.Format("using {0} uiIcon", SelectedItem.PlacingDef.defName));
 #endif
                 icon = SelectedItem.PlacingDef.uiIcon;
                 var thingDef = SelectedItem.PlacingDef as ThingDef;

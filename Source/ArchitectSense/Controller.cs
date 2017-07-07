@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using static ArchitectSense.DesignatorUtility;
 
 namespace ArchitectSense
 {
@@ -80,7 +79,7 @@ namespace ArchitectSense
 
                         // find the designator for this buildabledef
                         DesignationCategoryDef designatorCategory;
-                        var bdefDesignator = FindDesignator(bdef, out designatorCategory);
+                        var bdefDesignator = DesignatorUtility.FindDesignator(bdef, out designatorCategory);
                         if (category.debug && bdefDesignator == null)
                             Log.Warning("No designator found with matching entity def! Skipping.");
 
@@ -96,7 +95,7 @@ namespace ArchitectSense
                             }
 
                             designators.Add(bdefDesignator);
-                            HideDesignator(bdefDesignator);
+                            DesignatorUtility.HideDesignator(bdefDesignator);
 
                             if (category.debug)
                                 Logger.Message("ThingDef {0} passed checks and was added to subcategory.", defName);
