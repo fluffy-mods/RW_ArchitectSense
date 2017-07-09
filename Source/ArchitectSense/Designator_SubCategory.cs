@@ -115,7 +115,7 @@ namespace ArchitectSense
 #endif
                 icon = SelectedItem.PlacingDef.uiIcon;
                 var thingDef = SelectedItem.PlacingDef as ThingDef;
-                if (thingDef != null)
+                if (thingDef != null && thingDef.uiIconPath.NullOrEmpty())
                 {
                     iconProportions = thingDef.graphicData.drawSize;
                     iconDrawScale = GenUI.IconDrawScale(thingDef);
