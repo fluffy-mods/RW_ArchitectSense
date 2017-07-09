@@ -19,7 +19,7 @@ namespace ArchitectSense
 
         public static void MergeDesignationCategories(DesignationCategoryDef target, DesignationCategoryDef source)
         {
-            Log.Warning($"ArchitectSense :: Merging {source.defName} with {target.defName}...");
+            Log.Warning(String.Format("ArchitectSense :: Merging {0} with {1}...", source.defName, target.defName));
 
             // get both lists of resolved designators 
             var sourceDesignators = source.AllResolvedDesignators;
@@ -70,14 +70,14 @@ namespace ArchitectSense
             BuildableDef def = des.PlacingDef;
             // check for null
             if (def == null)
-                throw new Exception($"Tried to hide designator with NULL entDef ({des.Label}). Such designators should not exist.");
+                throw new Exception(String.Format("Tried to hide designator with NULL entDef ({0}). Such designators should not exist.", des.Label));
 
             // if category wasn't explicitly set, assume it is the same as the def's
             if (cat == null)
                 cat = def.designationCategory;
             // if still null, there's nothing to hide.
             if (cat == null)
-                throw new Exception($"Tried to hide designator from NULL category. That makes little sense.");
+                throw new Exception("Tried to hide designator from NULL category. That makes little sense.");
 
             // make sure the designator is cached so we can still get it later
             if (!_designators.ContainsKey(def))
@@ -90,7 +90,7 @@ namespace ArchitectSense
             if (resolved.Contains(des))
                 resolved.Remove(des);
             else
-                Log.Warning($"Tried to remove designator {des.Label} from category {cat.label}, but it was not included in the categories' resolved designators.");
+                Log.Warning(String.Format("Tried to remove designator {0} from category {1}, but it was not included in the categories' resolved designators.", des.Label, cat.label));
         }
 
         internal static bool isForDef(Designator_Build des, BuildableDef def)

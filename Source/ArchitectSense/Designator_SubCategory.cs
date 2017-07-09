@@ -111,11 +111,11 @@ namespace ArchitectSense
             else
             {
 #if DEBUG_ICON
-                Controller.Logger.Message($"using {SelectedItem.PlacingDef.defName} uiIcon");
+                Controller.Logger.Message(string.Format("using {0} uiIcon", SelectedItem.PlacingDef.defName));
 #endif
                 icon = SelectedItem.PlacingDef.uiIcon;
                 var thingDef = SelectedItem.PlacingDef as ThingDef;
-                if (thingDef != null)
+                if (thingDef != null && thingDef.uiIconPath.NullOrEmpty())
                 {
                     iconProportions = thingDef.graphicData.drawSize;
                     iconDrawScale = GenUI.IconDrawScale(thingDef);
