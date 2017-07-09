@@ -12,25 +12,11 @@ namespace ArchitectSense
 
     public class Controller : Mod
     {
-        [StaticConstructorOnStartup]
-        public static class Init
-        {
-            static Init()
-            {
-                _instance.Initialize();
-            }
-        }
-        #region Fields
-
-        private static Controller _instance;
-        
-        #endregion Fields
-
         #region Constructors
 
         public Controller( ModContentPack content ) : base ( content )
         {
-            _instance = this;
+            LongEventHandler.QueueLongEvent (Initialize, "ArchitectSense.Initialize", false, null);
         }
 
         public void Initialize()
@@ -38,8 +24,7 @@ namespace ArchitectSense
 
             Logger.Message("Creating subcategories");
             
-            foreach (DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading
-                )
+            foreach (DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading)
             {
                 if (category.debug)
                     Logger.Message("Creating subcategory {0} in category {1}", category.LabelCap,
@@ -128,8 +113,6 @@ namespace ArchitectSense
         #endregion Constructors
 
         #region Properties
-
-        public static Controller Get => _instance;
 
         private static Logger _logger;
         public static Logger Logger
