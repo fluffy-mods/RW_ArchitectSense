@@ -15,6 +15,9 @@ to handle dynamically creating categories, as well as finding and hiding individ
 # Issues
 Due to the extremely heavy-handed approach Erdelfs' MinePlan Designator uses to inject his designators, **MinePlan Designator is incompatible with Architect Sense**.
 
+# Contributors
+ - NotFood:	Several bugfixes
+
 # Think you found a bug? 
 Please read [this guide](http://steamcommunity.com/sharedfiles/filedetails/?id=725234314) before creating a bug report,
  and then create a bug report [here](https://github.com/FluffierThanThou/RW_ArchitectSense/issues)
