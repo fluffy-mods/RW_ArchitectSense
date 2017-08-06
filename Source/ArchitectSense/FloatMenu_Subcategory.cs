@@ -12,6 +12,13 @@ namespace ArchitectSense
 {
     internal class FloatMenu_SubCategory : FloatMenu
     {
+        struct OptionValues
+        {
+            public Rect DrawArea;
+            public bool mouseIsOver;
+            public bool commandIsTriggered;
+        }
+
         #region Constructors
 
         /// <summary>
@@ -22,11 +29,11 @@ namespace ArchitectSense
         /// <param name="optionSize"></param>
         /// <param name="iconSize"></param>
         /// <param name="closeOnSelection"></param>
-        public FloatMenu_SubCategory( List<FloatMenuOption_SubCategory> options,
-                                      string title,
-                                      Vector2 optionSize,
-                                      bool closeOnSelection = false )
-            : base( options.Select( opt => opt as FloatMenuOption ).ToList(), title )
+        public FloatMenu_SubCategory(List<FloatMenuOption_SubCategory> options,
+            string title,
+            Vector2 optionSize,
+            bool closeOnSelection = false)
+            : base(options.Select(opt => opt as FloatMenuOption).ToList(), title)
         {
             _options = options;
             _optionSize = optionSize;
@@ -41,7 +48,7 @@ namespace ArchitectSense
             do
             {
                 ++numColumns;
-            } while ( TotalHeight > Screen.height * .9 );
+            } while (TotalHeight > Screen.height * .9);
 
             windowRect.size = InitialSize;
 
@@ -50,11 +57,11 @@ namespace ArchitectSense
 
             // tweak rect position to fit within window
             // note: we're assuming up, then right placement of buttons now.
-            if ( windowRect.xMax > (double) Screen.width )
+            if (windowRect.xMax > (double) Screen.width)
                 windowRect.x = Screen.width - windowRect.width;
-            if ( windowRect.yMin < 0f )
+            if (windowRect.yMin < 0f)
                 windowRect.y -= windowRect.yMin;
-            if ( windowRect.yMax > (double) Screen.height )
+            if (windowRect.yMax > (double) Screen.height)
                 windowRect.y = Screen.height - windowRect.height;
         }
 
@@ -62,7 +69,7 @@ namespace ArchitectSense
 
         #region Methods
 
-        public override void DoWindowContents( Rect canvas )
+        public override void DoWindowContents(Rect canvas)
         {
             // define our own implementation, mostly copy-pasta with a few edits for option sizes
             // actual drawing is handled in OptionOnGUI.
@@ -73,31 +80,60 @@ namespace ArchitectSense
             var row = 0;
             var col = 0;
 
-            if ( _options.NullOrEmpty() )
+            if (_options.NullOrEmpty())
                 return;
 
             Text.Font = GameFont.Tiny;
-            foreach ( FloatMenuOption_SubCategory option in _options.OrderByDescending( op => op.Priority ) )
-            {
-                var optionRect = new Rect( listRoot.x + col * ( _optionSize.x + _margin ),
-                                           listRoot.y + row * ( _optionSize.y + _margin ),
-                                           _optionSize.x, _optionSize.y );
 
-                // re-set transparent base color for each item.
+            var sortedOptions = _options.OrderByDescending(op => op.Priority);
+
+            var optionValuesArray = new OptionValues[_options.Count];
+
+            for (int i = 0; i < _options.Count; i++)
+            {
+                var option = sortedOptions.ElementAt(i);
+
+                float posX = listRoot.x + col * (_optionSize.x + _margin);
+                float posY = listRoot.y + row * (_optionSize.y + _margin);
+
+                optionValuesArray[i].DrawArea = new Rect(posX, posY, option.gizmo.Width, 75f);
+
                 GUI.color = baseColor;
-                if ( option.DoGUI( optionRect, false ) )
-                {
-                    // click actions are handled in OptionOnGUI.
-                    if ( _closeOnSelection )
-                        Find.WindowStack.TryRemove( this, true );
-                    return;
-                }
+                optionValuesArray[i].mouseIsOver = option.DoGUI_BG(optionValuesArray[i].DrawArea);
+
 
                 row++;
-                if ( row >= ColumnMaxOptionCount )
+                if (row >= ColumnMaxOptionCount)
                 {
                     row = 0;
                     col++;
+                }
+            }
+
+
+            for (int i = 0; i < _options.Count; i++)
+            {
+                var option = sortedOptions.ElementAt(i);
+
+                GUI.color = baseColor;
+
+                optionValuesArray[i].commandIsTriggered = option.DoGUI_Label(optionValuesArray[i].DrawArea);
+            }
+
+            for (int i = 0; i < _options.Count; i++)
+            {
+                var option = sortedOptions.ElementAt(i);
+
+                var logic = option.DoGUI_Logic(optionValuesArray[i].mouseIsOver,
+                    optionValuesArray[i].commandIsTriggered);
+                if (logic.State == GizmoState.Interacted)
+                {
+                    option.gizmo.ProcessInput(logic.InteractEvent);
+                }
+
+                if (_closeOnSelection && Widgets.ButtonInvisible(optionValuesArray[i].DrawArea))
+                {
+                    Find.WindowStack.TryRemove(this, true);
                 }
             }
 
@@ -127,10 +163,10 @@ namespace ArchitectSense
         {
             get
             {
-                if ( _options.NullOrEmpty() )
-                    return new Vector2( 0.0f, 0.0f );
+                if (_options.NullOrEmpty())
+                    return new Vector2(0.0f, 0.0f);
 
-                return new Vector2( TotalWidth, TotalHeight );
+                return new Vector2(TotalWidth, TotalHeight);
             }
         }
 
@@ -138,7 +174,7 @@ namespace ArchitectSense
         {
             get
             {
-                if ( options.Count % numColumns == 0 )
+                if (options.Count % numColumns == 0)
                     return options.Count / numColumns;
 
                 return options.Count / numColumns + 1;
@@ -147,12 +183,12 @@ namespace ArchitectSense
 
         private Vector2 ListRoot
         {
-            get { return new Vector2( 4f, 0.0f ); }
+            get { return new Vector2(4f, 0.0f); }
         }
 
         private Rect OverRect
         {
-            get { return new Rect( ListRoot.x, ListRoot.y, TotalWidth, TotalHeight ); }
+            get { return new Rect(ListRoot.x, ListRoot.y, TotalWidth, TotalHeight); }
         }
 
         private float TotalHeight
@@ -160,31 +196,31 @@ namespace ArchitectSense
             get
             {
                 // the base constructor miscounts the number of options per column, overestimating it by one.
-                return ColumnMaxOptionCount * ( _optionSize.y + _margin );
+                return ColumnMaxOptionCount * (_optionSize.y + _margin);
             }
         }
 
         private float TotalWidth
         {
-            get { return numColumns * ( _optionSize.x + _margin ); }
+            get { return numColumns * (_optionSize.x + _margin); }
         }
 
         private void UpdateBaseColor()
         {
             baseColor = Color.white;
-            if ( !vanishIfMouseDistant )
+            if (!vanishIfMouseDistant)
                 return;
 
-            Rect r = OverRect.ContractedBy( -12f );
-            if ( r.Contains( Event.current.mousePosition ) )
+            Rect r = OverRect.ContractedBy(-12f);
+            if (r.Contains(Event.current.mousePosition))
                 return;
 
-            float distanceFromRect = GenUI.DistFromRect( r, Event.current.mousePosition );
-            baseColor = new Color( 1f, 1f, 1f, (float) ( 1.0 - distanceFromRect / 200.0 ) );
-            if ( distanceFromRect <= 200.0 )
+            float distanceFromRect = GenUI.DistFromRect(r, Event.current.mousePosition);
+            baseColor = new Color(1f, 1f, 1f, (float) (1.0 - distanceFromRect / 200.0));
+            if (distanceFromRect <= 200.0)
                 return;
 
-            Close( false );
+            Close(false);
             Cancel();
         }
 
