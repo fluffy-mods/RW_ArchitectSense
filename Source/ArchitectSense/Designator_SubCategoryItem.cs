@@ -163,12 +163,6 @@ namespace ArchitectSense
         {
             base.Selected();
             subCategory.SelectedItem = this;
-
-#if DEBUG_COSTLIST
-            // var costs = PlacingDef.CostListAdjusted(StuffDef).Select(c => c.thingDef.defName + ": " + c.count).ToArray();
-            var costs = entDef.costList.Select(c => c.thingDef.defName + ": " + c.count).ToArray();
-            Log.Message( $"{Label}: \n" + String.Join( "\n", costs ) );
-#endif
         }
     }
 }
