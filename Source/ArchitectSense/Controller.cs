@@ -69,6 +69,7 @@ namespace ArchitectSense
 
                 // start adding designators to the subcategory
                 if (category.defNames != null)
+                {
                     foreach (string defName in category.defNames)
                     {
                         BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail(defName) ??
@@ -108,6 +109,7 @@ namespace ArchitectSense
                         }
                         // done with this designator
                     }
+                }
 
                 // check if any designators were added to subdesignator
                 if (!designators.NullOrEmpty())
