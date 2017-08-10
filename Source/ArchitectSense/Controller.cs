@@ -22,15 +22,34 @@ namespace ArchitectSense
 
         public void Initialize()
         {
+            CreateSubCategories();
+            MergeCategories();
+            RemoveCategories();
+        }
 
-            Logger.Message("Creating subcategories");
-            
+        private static void MergeCategories()
+        {
+            Logger.Debug("Merging categories...");
+            foreach (var merger in DefDatabase<MergeCategories>.AllDefsListForReading)
+                merger.Apply();
+        }
+
+        private static void RemoveCategories()
+        {
+            Logger.Debug("Removing categories...");
+            foreach (var obsoletion in DefDatabase<RemoveCategory>.AllDefsListForReading)
+                obsoletion.Apply();
+        }
+
+        private static void CreateSubCategories()
+        {
+            Logger.Debug("Creating subcategories");
             foreach (DesignationSubCategoryDef category in DefDatabase<DesignationSubCategoryDef>.AllDefsListForReading
-                )
+            )
             {
                 if (category.debug)
                     Logger.Message("Creating subcategory {0} in category {1}", category.LabelCap,
-                                    category.designationCategory);
+                        category.designationCategory);
 
                 // cop out if main cat not found
                 if (category.designationCategory == null)
@@ -53,7 +72,7 @@ namespace ArchitectSense
                     foreach (string defName in category.defNames)
                     {
                         BuildableDef bdef = DefDatabase<ThingDef>.GetNamedSilentFail(defName) ??
-                                            (BuildableDef)DefDatabase<TerrainDef>.GetNamedSilentFail(defName);
+                                            (BuildableDef) DefDatabase<TerrainDef>.GetNamedSilentFail(defName);
 
                         // do some common error checking
                         // buildable def exists

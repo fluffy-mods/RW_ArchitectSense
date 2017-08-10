@@ -30,6 +30,17 @@ namespace ArchitectSense
                 if (!targetDesignators.Contains(sourceDesignator))
                     targetDesignators.Add(sourceDesignator);
 
+            RemoveDesignationCategory(source);
+        }
+
+        public static DesignationCategoryDef ResolveCategory(string categoryName)
+        {
+            return DefDatabase<DesignationCategoryDef>.GetNamedSilentFail(categoryName);
+        }
+
+        public static void RemoveDesignationCategory(DesignationCategoryDef category)
+        {
+
             // todo; why doesn't this work?
             //// clean up source category
             //// check we got the field info
@@ -54,11 +65,10 @@ namespace ArchitectSense
             //// assign the new cached list back
             //_desPanelCacheFieldinfo.SetValue( MainTabDefOf.Architect.Window, tabs );
 
-
             // the subtle solution didn't seem to work, so let's get nuclear
-            (DefDatabase<DesignationCategoryDef>.AllDefs as List<DesignationCategoryDef>)?.Remove(source);
+            (DefDatabase<DesignationCategoryDef>.AllDefs as List<DesignationCategoryDef>)?.Remove(category);
             typeof(MainTabWindow_Architect).GetMethod("CacheDesPanels", (BindingFlags)60)
-                                             .Invoke(MainButtonDefOf.Architect.TabWindow, null);
+                .Invoke(MainButtonDefOf.Architect.TabWindow, null);
         }
 
         public static void HideDesignator(Designator_Build des, DesignationCategoryDef cat = null)

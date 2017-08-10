@@ -54,7 +54,9 @@
     <Compile Include="FloatMenu_Subcategory.cs" />
     <Compile Include="FloatMenuOption_SubCategory.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="MergeCategory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RemoveCategory.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

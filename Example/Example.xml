@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+      <ArchitectSense.DesignationSubCategoryDef> 
+    	<defName>SubCategory_Chairs</defName>
+    	<label>seats</label>
+    	<description>Chairs, stools sofas and benches</description>
+    	<!-- graphicData is optional, if not set the icon for the first def listed below will be borrowed. -->
+    	<!-- <graphicData></graphicData> -->
+    	<defNames>
+            <li>Stool</li>
+            <li>DiningChair</li>
+            <li>Armchair</li>
+            <li>StoolLinkable</li>
+            <li>Couch</li>
+            <li>ComfySeat</li>
+            <li>StoolRedesigned</li>
+            <li>RoundChair</li>
+    	</defNames>
+    	<designationCategory>Furniture</designationCategory>
+    	<!-- Debug flag prints some extra information after map is loaded (while subcategories are being created) -->
+    	<debug>true</debug>
+    </ArchitectSense.DesignationSubCategoryDef>
+
+    <!-- Merging categories -->
+    <ArchitectSense.MergeCategories>
+        <defName>Merge_FloorsAndJoy</defName>
+        <from>Floors</from>
+        <to>Joy</to>
+    </ArchitectSense.MergeCategories>
+
+    <!-- Removing categories -->
+    <ArchitectSense.RemoveCategory>
+        <defName>Remove_Structure</defName>
+        <category>Structure</category>
+    </ArchitectSense.RemoveCategory>
+
+</Defs>
