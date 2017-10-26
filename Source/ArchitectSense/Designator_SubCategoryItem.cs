@@ -163,5 +163,11 @@ namespace ArchitectSense
             base.Selected();
             subCategory.SelectedItem = this;
         }
+
+        public override void ProcessInput(Event ev)
+        {
+            base.ProcessInput(ev);
+            subCategory.SelectedItem = this;
+        }
     }
 }
