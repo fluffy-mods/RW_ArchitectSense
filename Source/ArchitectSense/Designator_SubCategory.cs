@@ -172,8 +172,8 @@ namespace ArchitectSense
 
             // otherwise, mimick the normal stuff selection by re-selecting the last 'stuff' (designator), but also showing OUR floatmenu.
             // Since our floatmenu will be called right after a possible stuff selection floatmenu, we should check if there's a stuff float menu - and close it.
-            Find.WindowStack.FloatMenu?.Close(false);
             SelectedItem.ProcessInput(ev);
+            Find.WindowStack.FloatMenu?.Close(false);
             ShowOptions();
         }
 
