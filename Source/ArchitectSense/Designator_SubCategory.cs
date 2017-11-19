@@ -159,7 +159,7 @@ namespace ArchitectSense
             // if no valid options, print error
             if ( ValidSubDesignators.Count == 0 )
             {
-                Messages.Message("NoStuffsToBuildWith".Translate(), MessageSound.RejectInput);
+                Messages.Message("NoStuffsToBuildWith".Translate(), MessageTypeDefOf.RejectInput);
                 return;
             }
 

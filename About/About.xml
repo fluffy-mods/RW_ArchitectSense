@@ -3,7 +3,7 @@
   <name>Architect Sense</name>
   <author>Fluffy</author>
   <url>https://ludeon.com/forums/index.php?topic=16120.0</url>
-  <targetVersion>0.17.1557</targetVersion>
+  <targetVersion>0.18.1722</targetVersion>
   <description>Allows modders to combine buildables in subcategories.
 
 &lt;size=24&gt;Important&lt;/size&gt;
@@ -24,7 +24,7 @@ Due to the extremely heavy-handed approach Erdelfs’ MinePlan Designator uses t
 NotFood:    Several bugfixes
 
 &lt;size=24&gt;Version&lt;/size&gt;
-This is version v0.17.1.9
+This is version v0.17.2.0
 
 </description>
 </ModMetaData>

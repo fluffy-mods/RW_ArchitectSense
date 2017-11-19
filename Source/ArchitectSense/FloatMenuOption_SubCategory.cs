@@ -126,7 +126,7 @@ namespace ArchitectSense
                 {
                     if (!gizmo.disabledReason.NullOrEmpty())
                     {
-                        Messages.Message(gizmo.disabledReason, MessageSound.RejectInput);
+                        Messages.Message(gizmo.disabledReason, MessageTypeDefOf.RejectInput);
                     }
                     return new GizmoResult(GizmoState.Mouseover, null);
                 }
