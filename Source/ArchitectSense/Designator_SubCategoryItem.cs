@@ -134,7 +134,7 @@ namespace ArchitectSense
                 if (!disabled)
                     return new GizmoResult(GizmoState.Interacted, Event.current);
                 if (!disabledReason.NullOrEmpty())
-                    Messages.Message(disabledReason, MessageSound.RejectInput);
+                    Messages.Message(disabledReason, MessageTypeDefOf.RejectInput);
                 return new GizmoResult(GizmoState.Mouseover, null);
             }
 

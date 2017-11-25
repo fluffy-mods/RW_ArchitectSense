@@ -132,7 +132,7 @@ namespace ArchitectSense
                 }
                 else if (logic.State == GizmoState.Mouseover)
                 {
-                    DoInfoBox (ArchitectCategoryTab.InfoRect, option.gizmo);
+                    DesignatorUtility.DoInfoBox( ArchitectCategoryTab.InfoRect, option.gizmo);
                 }
 
                 if (_closeOnSelection && Widgets.ButtonInvisible(optionValuesArray[i].DrawArea))
@@ -143,27 +143,6 @@ namespace ArchitectSense
 
             GUI.color = Color.white;
             Text.Font = GameFont.Small;
-        }
-
-        // copypasta from ArchitectCategoryTab.DoInfoBox except different ID and no shadow.
-        void DoInfoBox (Rect infoRect, Designator designator)
-        {
-            Find.WindowStack.ImmediateWindow (32521, infoRect, WindowLayer.GameUI, delegate {
-                if (designator != null) {
-                    Rect position = infoRect.AtZero ().ContractedBy (7f);
-                    GUI.BeginGroup (position);
-                    Rect rect = new Rect (0f, 0f, position.width, 999f);
-                    Text.Font = GameFont.Small;
-                    Widgets.Label (rect, designator.LabelCap);
-                    float num = 24f;
-                    designator.DrawPanelReadout (ref num, position.width);
-                    Rect rect2 = new Rect (0f, num, position.width, position.height - num);
-                    string desc = designator.Desc;
-                    GenText.SetTextSizeToFit (desc, rect2);
-                    Widgets.Label (rect2, desc);
-                    GUI.EndGroup ();
-                }
-            }, true, false, 0f);
         }
 
         #endregion Methods
