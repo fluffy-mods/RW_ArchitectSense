@@ -16,7 +16,7 @@ to handle dynamically creating categories, as well as finding and hiding individ
 Due to the extremely heavy-handed approach Erdelfs' MinePlan Designator uses to inject his designators, **MinePlan Designator is incompatible with Architect Sense**.
 
 # Contributors
- - NotFood:	Several bugfixes
+ - NotFood:	Several bugfixes, show cost preview on hover
  - notfood:	
 
 # Think you found a bug? 
@@ -38,4 +38,4 @@ Show your appreciation by buying me a coffee (or contribute towards a nice singl
 [![Buy Me a Coffee](http://i.imgur.com/EjWiUwx.gif)](https://ko-fi.com/fluffymods)
 
 # Version
-This is version v0.18.0.2
+This is version v0.18.0.3
