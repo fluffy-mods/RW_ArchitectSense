@@ -17,6 +17,7 @@ Due to the extremely heavy-handed approach Erdelfs' MinePlan Designator uses to 
 
 # Contributors
  - NotFood:	Several bugfixes
+ - notfood:	
 
 # Think you found a bug? 
 Please read [this guide](http://steamcommunity.com/sharedfiles/filedetails/?id=725234314) before creating a bug report,

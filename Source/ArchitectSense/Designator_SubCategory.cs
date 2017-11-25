@@ -200,7 +200,9 @@ namespace ArchitectSense
                 {
                     // TODO: Check if subdesignator is allowed (also check if this check is even needed, as !Visible is already filtered out)
                     options.Add(new FloatMenuOption(designator.LabelCap,
-                                                      delegate { Find.DesignatorManager.Select(designator); }));
+                                                      delegate { Find.DesignatorManager.Select(designator); },
+                                                      MenuOptionPriority.Default,
+                                                      delegate { DesignatorUtility.DoInfoBox(ArchitectCategoryTab.InfoRect, designator ); } ));
                 }
 
                 Find.WindowStack.Add(new FloatMenu(options, null));

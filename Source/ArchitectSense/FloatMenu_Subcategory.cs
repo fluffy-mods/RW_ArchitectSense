@@ -130,6 +130,10 @@ namespace ArchitectSense
                 {
                     option.gizmo.ProcessInput(logic.InteractEvent);
                 }
+                else if (logic.State == GizmoState.Mouseover)
+                {
+                    DesignatorUtility.DoInfoBox( ArchitectCategoryTab.InfoRect, option.gizmo);
+                }
 
                 if (_closeOnSelection && Widgets.ButtonInvisible(optionValuesArray[i].DrawArea))
                 {
